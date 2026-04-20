@@ -1,0 +1,73 @@
+\section{Overall Description}
+
+\subsection{Product Perspective}
+
+The Clinic Management System is a standalone software system designed to replace traditional paper-based processes with a fully automated digital environment. While it operates independently, the system is designed to interact within a modern technical ecosystem:
+
+\begin{itemize}
+	\item \textbf{User Interface:} A responsive web application accessible via modern web browsers.
+	\item \textbf{Hardware Integration:} The system supports interaction with standard office printers for generating invoices, prescriptions, and medical reports.
+	\item \textbf{External Systems (Future Integration):} The database architecture is designed to support future scalability, allowing integration with third-party services such as SMS gateways for appointment reminders and electronic payment portals.
+\end{itemize}
+
+\subsection{Product Functions}
+
+The system provides a set of core services organized into the following functional modules:
+
+\begin{itemize}
+	\item \textbf{Identity and Access Management (IAM):} Controlling user authentication and Role-Based Access Control (RBAC).
+	\item \textbf{Appointment Scheduling:} Booking, rescheduling, and canceling appointments with automated conflict detection.
+	\item \textbf{Medical Records Management:} Digitally archiving patient history, diagnoses, and prescriptions.
+	\item \textbf{Billing and Finance:} Automated invoice generation and tracking of payments.
+	\item \textbf{Audit and Compliance:} Maintaining an active log of all system activities for transparency and security.
+\end{itemize}
+
+\subsection{User Classes and Characteristics}
+
+The system identifies four primary user classes:
+
+\begin{itemize}
+	\item \textbf{System Administrator (Admin):} Full system privileges including user management and audit logs.
+	\item \textbf{Receptionist:} Manages patients, appointments, and billing operations.
+	\item \textbf{Doctor:} Handles medical records, diagnoses, and schedules.
+	\item \textbf{Patient:} Can request appointments and view personal medical data.
+\end{itemize}
+
+\subsection{Operating Environment}
+
+The system operates within a distributed web architecture:
+
+\begin{itemize}
+	\item \textbf{Platform:} Web-based application deployed on a centralized server.
+	\item \textbf{Client Side:} Accessible via PCs, laptops, or tablets using modern browsers.
+	\item \textbf{Operating System:} Compatible with Linux and Windows Server environments.
+	\item \textbf{Database:} MySQL relational database management system.
+\end{itemize}
+
+\subsection{Design and Implementation Constraints}
+
+The system must respect the following constraints:
+
+\begin{itemize}
+	\item \textbf{Technical Stack:} PHP (backend), Vue.js (frontend), HTML5/CSS3/JavaScript, MySQL database.
+	\item \textbf{Security and Privacy:} Strict access control for medical data based on user roles.
+	\item \textbf{Availability:} Minimum 99\% uptime during clinic working hours.
+\end{itemize}
+
+\subsection{User Documentation}
+
+The system includes:
+
+\begin{itemize}
+	\item User Manual (Arabic \& English PDF).
+	\item Administrator Guide (system configuration and backup procedures).
+	\item In-app help tooltips and guidance messages.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+
+\textbf{Assumptions:}
+The clinic provides hardware devices and stable internet connectivity. Printers support standard web printing protocols.
+
+\textbf{Dependencies:}
+The system depends on MySQL database availability and web hosting infrastructure.
