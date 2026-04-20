@@ -1,0 +1,85 @@
+\section{Introduction}
+
+\subsection{Purpose}
+
+This document provides a comprehensive and precise specification of the requirements for the \textit{Clinic Management System}. It serves as both a technical and regulatory reference, clearly defining the system’s functional capabilities and operational constraints.
+
+The document is intended to guide the development team throughout the requirements analysis, design, and implementation phases. In addition, it provides stakeholders—particularly clinic management—with a structured framework to verify that the final system aligns with real operational needs and complies with applicable regulatory standards.
+
+\subsection{Document Conventions}
+
+This document follows the standards set by the \textit{IEEE 830-1998} for Software Requirements Specifications. The following typographical and formatting conventions are used throughout to ensure clarity:
+
+\begin{itemize}
+	\item \textbf{Priority Categorization:} Every functional requirement is assigned a priority level to guide the development and testing phases:
+	\begin{itemize}
+		\item \textbf{[High]}: Critical features required for the core operation of the clinic.
+		\item \textbf{[Medium]}: Important features that enhance efficiency but are not vital for basic operations.
+		\item \textbf{[Low]}: Optional or ``nice-to-have'' features that may be deferred to future updates.
+	\end{itemize}
+	
+	\item \textbf{Typographical Styles:}
+	\begin{itemize}
+		\item \textbf{Boldface:} Used for Graphical User Interface (GUI) elements, such as buttons, menu items, and window titles (e.g., ``Click the \textbf{Save} button'').
+		\item \textit{Italics:} Used for emphasis, key technical terms at their first mention, or placeholders for specific values.
+		\item \texttt{Monospace Font:} Used for database table names, field names, or code snippets (e.g., \texttt{Patient\_ID}).
+	\end{itemize}
+	
+	\item \textbf{Identification Schemes:} Standard prefixes are used for cross-referencing between sections:
+	\begin{itemize}
+		\item \texttt{REQ-x}: Represents a Functional Requirement (e.g., \texttt{REQ-1}).
+		\item \texttt{UC-x}: Represents a Use Case (e.g., \texttt{UC-05}).
+		\item \texttt{TBD-x}: Represents a placeholder for items ``To Be Determined'' (e.g., \texttt{TBD-01}).
+	\end{itemize}
+\end{itemize}
+
+\subsection{Intended Audience and Reading Suggestions}
+
+This document is intended for the following audience:
+
+\begin{itemize}
+	\item \textbf{Stakeholders \& Clinic Administration:} To understand how the system addresses current operational challenges and ensures alignment with the clinic’s strategic goals.
+	\item \textbf{System Analysts:} To utilize the Business Rules and Functional Requirements as a foundation for designing UML diagrams and system logic.
+	\item \textbf{Developers:} To translate the defined Functional Requirements and Database Schema into efficient and accurate source code.
+	\item \textbf{Quality Assurance (QA) Team:} To use the described scenarios and features as a primary reference for building test plans and ensuring the system is bug-free before delivery.
+\end{itemize}
+
+\subsection{Product Scope}
+
+\subsubsection{General Description}
+
+The \textit{Clinic Management System} is an integrated administrative and medical platform designed to digitize and automate manual clinic operations. The system connects four key stakeholders (\textit{Patient, Receptionist, Doctor, and Administration}) into a single data loop, ensuring a seamless flow of information from initial appointment booking to final billing and medical record archiving.
+
+\subsubsection{In-Scope (Included Functional Requirements)}
+
+Based on the defined database schema, the project will deliver the following software solutions:
+
+\begin{itemize}
+	\item \textbf{Smart Booking System:} Automating appointments and performing real-time conflict checks against doctor schedules.
+	\item \textbf{Digital Medical Records (EMR):} Converting physical patient files into electronic records, including diagnoses and prescriptions.
+	\item \textbf{Access Control \& Auditing:} Implementing Role-Based Access Control (RBAC) and maintaining an Active Log to track all system transactions and prevent unauthorized tampering.
+	\item \textbf{Financial Engine:} Automated calculation of medical service costs and invoice generation (\textit{Bills}).
+	\item \textbf{Specialty Management:} Managing medical specialties to streamline patient referrals to the appropriate physician.
+\end{itemize}
+
+\subsubsection{Out-of-Scope (Excluded from Current Phase)}
+
+To ensure timely delivery and focus on core objectives, the following features are excluded from the current version:
+
+\begin{itemize}
+	\item Internal Pharmacy System.
+	\item External Lab Integration.
+	\item Mobile Application for patients.
+	\item Human Resources \& Payroll management.
+\end{itemize}
+
+\subsection{References}
+
+Reference materials and standards:
+
+\begin{itemize}
+	\item IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications.
+	\item Internal clinic documentation: patient record templates, booking logs, and financial receipt samples.
+	\item System design models: ERD and DFD developed during the analysis phase.
+	\item User interview notes gathered from receptionists and doctors regarding current workflow and needs.
+\end{itemize}
