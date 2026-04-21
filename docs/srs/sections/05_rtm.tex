@@ -1,0 +1,38 @@
+\section{Requirements Traceability Matrix (RTM)}
+
+\keepXColumns 
+\begin{tabularx}{\textwidth}{l L L L l l}
+	\caption{Requirements Traceability Matrix} \label{tab:rtm} \\
+	
+	\toprule
+	\textbf{REQ ID} & \textbf{Requirement Summary} & \textbf{Use Case} & \textbf{Sequence / Activity} & \textbf{DB Entity} & \textbf{Test ID} \\
+	\midrule
+	\endfirsthead
+	
+	\multicolumn{6}{c}{{\bfseries \tablename\ \thetable{} -- Continued from previous page}} \\
+	\toprule
+	\textbf{REQ ID} & \textbf{Requirement Summary} & \textbf{Use Case} & \textbf{Sequence / Activity} & \textbf{DB Entity} & \textbf{Test ID} \\
+	\midrule
+	\endhead
+	
+	\bottomrule
+	\endfoot
+	
+	REQ-1  & Manage user accounts & Manage Users (Admin) & Admin User Management & User & TC-01 \\ \addlinespace
+	REQ-2  & Manage specialties \& services & Manage Specialties & Resource Management & Specialty & TC-02 \\ \addlinespace
+	REQ-3  & View audit logs & View Logs & Admin Auth with Logging & Active\_Log & TC-03 \\ \addlinespace
+	REQ-4  & Register patient \& prevent duplicates & Patient Registration & Patient Reg Sequence & Patient & TC-04 \\ \addlinespace
+	REQ-5  & View EMR & View Patient History & Doctor Consultation Flow & Medical\_Record & TC-05 \\ \addlinespace
+	REQ-6  & Search patients & Patient Management & Receptionist Activity & Patient & TC-06 \\ \addlinespace
+	REQ-7  & Prevent double booking & Manage Appointments & Appointment Booking & Appointment & TC-07 \\ \addlinespace
+	REQ-8  & Reschedule / cancel appointment & Manage Appointments & Appointment Booking & Appointment & TC-08 \\ \addlinespace
+	REQ-9  & Daily appointment dashboard & View Appointments & Doctor Activity & Appointment & TC-09 \\ \addlinespace
+	REQ-10 & Record diagnosis & Add Diagnosis & Consultation Flow & Medical\_Record & TC-10 \\ \addlinespace
+	REQ-11 & Generate prescription & Create Prescription & Consultation Flow & Prescription & TC-11 \\ \addlinespace
+	REQ-12 & Link diagnosis to services & Billing Preparation & Billing Sequence & Bill & TC-12 \\ \addlinespace
+	REQ-13 & Auto invoice generation & Invoice & Billing \& Receipt Gen & Bill & TC-13 \\ \addlinespace
+	REQ-14 & Record payments \& receipt & Payment & Billing \& Receipt Gen & Payment & TC-14 \\ \addlinespace
+	REQ-15 & Financial reports & View Reports & Reports \& Settings & Bill, Payment & TC-15 \\
+	
+	\bottomrule
+\end{tabularx}
