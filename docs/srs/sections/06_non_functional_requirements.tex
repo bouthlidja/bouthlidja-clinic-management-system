@@ -1,0 +1,81 @@
+\section{Other Non-functional Requirements}
+
+\subsection{Performance}
+\begin{itemize}
+	\item \textbf{Response Time:} The system shall respond to user queries (e.g., patient search, appointment check) within a maximum of 2 seconds.
+	\item \textbf{Concurrency:} The system must support at least 50 concurrent users without degradation in performance, especially during peak clinic hours.
+\end{itemize}
+
+\subsection{Security}
+\begin{itemize}
+	\item \textbf{Authentication:} Access is restricted to authorized users via encrypted credentials with Role-Based Access Control (RBAC).
+	\item \textbf{Encryption:} Sensitive data, including passwords and payment information, must be encrypted using strong protocols such as BCrypt or AES.
+	\item \textbf{Authorization:} The system follows the Principle of Least Privilege.
+	\item \textbf{Audit Trail:} The \texttt{Active\_log} table shall record every operation (Create, Update, Delete) with timestamp and user ID.
+\end{itemize}
+
+\subsection{Usability}
+\begin{itemize}
+	\item \textbf{Intuitive UI:} Designed to ease transition from paper-based processes with minimal training.
+	\item \textbf{Multi-language Support:} English primary, Arabic supported, future French expansion.
+\end{itemize}
+
+\subsection{Reliability \& Availability}
+\begin{itemize}
+	\item \textbf{Uptime:} 99.9\% availability during clinic operational hours.
+	\item \textbf{Data Recovery:} Mechanisms to prevent data loss during failures.
+\end{itemize}
+
+\subsection{Maintainability \& Architecture}
+\begin{itemize}
+	\item \textbf{MVC Architecture:}
+	\begin{itemize}
+		\item Front-End: HTML, CSS, Vue.js
+		\item Logic Layer: PHP Controllers
+		\item Data Access Layer: OOP PHP abstraction for DBMS flexibility
+	\end{itemize}
+	\item \textbf{Coding Standards:} CamelCase, documentation, SOLID principles.
+\end{itemize}
+
+\subsection{Compatibility}
+\begin{itemize}
+	\item \textbf{Browser Support:} Chrome, Firefox, Edge, Safari.
+	\item \textbf{Responsive Design:} Desktop, Tablet, Smartphone support.
+\end{itemize}
+
+\subsection{Health Data Governance}
+
+\subsubsection{Data Classification}
+PII, PHI, Financial Data, System Logs.
+
+\subsubsection{Access Control}
+Role-based restrictions and logging of PHI access.
+
+\subsubsection{Data Encryption}
+Encryption at rest and HTTPS/TLS in transit.
+
+\subsubsection{Data Retention Policy}
+Medical records (10 years), audit logs (5 years).
+
+\subsubsection{Patient Privacy \& Consent}
+Patient consent, data access, and correction rights.
+
+\subsubsection{Backup \& Disaster Recovery}
+Daily backups, 2-hour restore window, off-site encrypted storage.
+
+\subsubsection{Audit \& Monitoring}
+All PHI operations logged with User ID, Timestamp, Action.
+
+\subsection{Operational Policies}
+
+\subsubsection{Backup Policy}
+Daily encrypted backups, 30-day rolling retention, 2-hour restore.
+
+\subsubsection{Session Management Policy}
+15-minute timeout, restricted concurrent logins, secure tokens.
+
+\subsubsection{Password \& Authentication Policy}
+8+ chars, bcrypt hashing, 90-day rotation, lockout after 5 failures.
+
+\subsubsection{System Monitoring Policy}
+Critical operation logs, admin review, suspicious login alerts.
