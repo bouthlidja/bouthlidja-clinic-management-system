@@ -1,0 +1,35 @@
+\section{External Interface Requirements}
+
+\subsection{User Interfaces}
+
+The system features a modern Graphical User Interface (GUI) developed with Vue.js to provide a Single Page Application (SPA) experience.
+
+\begin{itemize}
+	\item \textbf{Dashboards:} Specialized views for Doctors, Receptionists, and Patients to minimize cognitive load.
+	\item \textbf{UX/UI Standards:} Consistent typography and color palettes designed for long-term daily use.
+	\item \textbf{Validation:} Real-time client-side validation and confirmation dialogs for critical actions (e.g., deleting records).
+\end{itemize}
+
+\subsection{Hardware Interfaces}
+
+The system supports direct interfacing with the following hardware:
+
+\begin{itemize}
+	\item \textbf{Printers:} For generating physical copies of medical bills, prescriptions, and laboratory reports via the browser's print subsystem.
+\end{itemize}
+
+\subsection{Software Interfaces}
+
+\begin{itemize}
+	\item \textbf{DBMS Interface:} Utilizing PHP PDO to manage secure communication between the application logic and the MySQL/Oracle database.
+	\item \textbf{APIs:} Implementing RESTful APIs to serve JSON data from the PHP backend to the Vue.js frontend.
+	\item \textbf{Payment Integration:} Future hooks for external Payment Gateways to process transactions within the Payments table.
+\end{itemize}
+
+\subsection{Communications Interfaces}
+
+\begin{itemize}
+	\item \textbf{Protocols:} Mandatory use of HTTPS for end-to-end data encryption.
+	\item \textbf{Network Support:} Compatible with both Local Area Networks (LAN) and Wide Area Networks (WAN).
+	\item \textbf{Data Interchange:} All data exchange between the server and client will be formatted in JSON.
+\end{itemize}
