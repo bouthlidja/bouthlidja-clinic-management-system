@@ -9,6 +9,13 @@
 \usepackage{longtable}
 \usepackage{array}
 \usepackage{fancyhdr}
+\usepackage{booktabs}   % لتحسين جودة الخطوط الأفقية
+\usepackage{tabularx}   % للتحكم المرن في عرض الأعمدة
+\usepackage{longtable}  % للجداول الطويلة
+\usepackage{ltablex}    % لدمج ميزات tabularx مع longtable
+
+% تعريف نوع عمود جديد للنصوص الطويلة مع محاذاة لليسار
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \geometry{margin=2.5cm}
 
@@ -30,6 +37,10 @@
 	\input{sections/01_introduction}
 	\newpage
 	\input{sections/02_overall_description}
+	\newpage
+	\input{sections/03_external_interfaces.tex}
+	\newpage
+	\input{sections/04_functional_requirements.tex}
 	\newpage
 	
 \end{document}

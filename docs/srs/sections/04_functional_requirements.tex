@@ -1,0 +1,38 @@
+\section{Functional Requirements}
+
+\keepXColumns 
+\begin{tabularx}{\textwidth}{l L l c}
+	\caption{Functional Requirements of the System} \label{tab:func_req} \\
+	
+	\toprule
+	\textbf{ID} & \textbf{Functional Requirement} & \textbf{Primary Actor} & \textbf{Priority} \\
+	\midrule
+	\endfirsthead
+	
+	\multicolumn{4}{c}{{\bfseries \tablename\ \thetable{} -- Continued from previous page}} \\
+	\toprule
+	\textbf{ID} & \textbf{Functional Requirement} & \textbf{Primary Actor} & \textbf{Priority} \\
+	\midrule
+	\endhead
+	
+	\bottomrule
+	\endfoot
+	
+	REQ-1  & Create, update, and deactivate user accounts for Doctors and Staff while preserving historical activity logs. & Admin & High \\ \addlinespace
+	REQ-2  & Define, update, and deactivate medical specialties and related services, including pricing and default duration. & Admin & High \\ \addlinespace
+	REQ-3  & View, filter, and search audit logs by user, date range, and action type. & Admin & Medium \\ \addlinespace
+	REQ-4  & Register new patients using a unique identifier (National ID/Phone) and prevent duplicate records. & Receptionist & High \\ \addlinespace
+	REQ-5  & Display a complete Electronic Medical Record (EMR) including previous diagnoses, prescriptions, and history. & Doctor / Staff & High \\ \addlinespace
+	REQ-6  & Search for patients by name or phone number with results displayed within 2 seconds. & Receptionist & High \\ \addlinespace
+	REQ-7  & \textbf{Conflict Prevention:} Prevent saving an appointment if another exists for the same doctor, date, and time. & System & \textbf{Critical} \\ \addlinespace
+	REQ-8  & Reschedule or cancel appointments and automatically update doctor availability in real-time. & Receptionist & High \\ \addlinespace
+	REQ-9  & Display a real-time daily appointment list for Doctors and Receptionists based on the current date. & Doctor / Staff & High \\ \addlinespace
+	REQ-10 & Record diagnoses and clinical notes linked to a specific patient visit. & Doctor & High \\ \addlinespace
+	REQ-11 & Generate an electronic prescription linked to the recorded diagnosis and store it in the patient’s EMR. & Doctor & High \\ \addlinespace
+	REQ-12 & Link recorded diagnoses to selected medical services to enable automatic invoice calculation. & Doctor & Medium \\ \addlinespace
+	REQ-13 & Automatically generate an invoice based on the medical services linked to the patient’s visit. & System & High \\ \addlinespace
+	REQ-14 & Record full or partial payments and generate an electronic receipt for each transaction. & Receptionist & High \\ \addlinespace
+	REQ-15 & Display financial reports showing daily and monthly revenue categorized by medical specialty. & Admin & Medium \\
+	
+	\bottomrule
+\end{tabularx}
