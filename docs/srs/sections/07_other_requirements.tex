@@ -1,0 +1,190 @@
+\section{Other Requirements}
+
+\subsection{Appendix A: Glossary}
+
+This glossary provides definitions for the technical and medical terminology used throughout this SRS document to ensure a consistent understanding among all stakeholders.
+
+\keepXColumns 
+\begin{tabularx}{\textwidth}{l L}
+	\caption{Glossary of Terms and Abbreviations} \label{tab:glossary} \\
+	
+	\toprule
+	\textbf{Term} & \textbf{Definition} \\
+	\midrule
+	\endfirsthead
+	
+	\multicolumn{2}{c}{{\bfseries \tablename\ \thetable{} -- Continued from previous page}} \\
+	\toprule
+	\textbf{Term} & \textbf{Definition} \\
+	\midrule
+	\endhead
+	
+	\bottomrule
+	\endfoot
+	
+	\textbf{SRS} & Software Requirements Specification: A formal document that describes the functional and non-functional requirements of the system. \\ \addlinespace
+	\textbf{MVC} & Model-View-Controller: A software architectural pattern that separates the application into Data (Model), Logic (Controller), and Interface (View). \\ \addlinespace
+	\textbf{SPA} & Single Page Application: A web application that dynamically updates the current page rather than loading new pages from a server (e.g., using Vue.js). \\ \addlinespace
+	\textbf{RBAC} & Role-Based Access Control: A security mechanism that restricts system access based on user roles (Admin, Doctor, Receptionist). \\ \addlinespace
+	\textbf{EMR} & Electronic Medical Record: A digital version of a patient’s medical history, including diagnoses and prescriptions. \\ \addlinespace
+	\textbf{PDO} & PHP Data Objects: A consistent way to access databases in PHP with protection against SQL injection. \\ \addlinespace
+	\textbf{Audit Trail} & (Active Log) A chronological record of system activities affecting operations or events. \\ \addlinespace
+	\textbf{Scalability} & The capability of the system to handle growth in users, data, or workload. \\ \addlinespace
+	\textbf{Business Rules} & The logic and constraints governing clinic operations (e.g., preventing schedule overlaps). \\ \addlinespace
+	\textbf{JSON} & JavaScript Object Notation: A lightweight format for data exchange between PHP backend and Vue.js frontend. \\ \addlinespace
+	\textbf{UI/UX} & User Interface / User Experience: The visual and interactive experience of the system. \\
+	
+	\bottomrule
+\end{tabularx}
+\newpage
+\subsection{Appendix B: Analysis Models}
+
+\subsubsection{Use Case Diagrams}
+\paragraph{7.2.1.1 High-level:}
+The high-level use case diagram provides an abstract representation of the CMS, identifying primary actors and the central authentication mechanism.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/UC_overview.pdf}
+	\caption{High-Level Use Case Diagram}
+\end{figure}
+
+\paragraph{Actors}
+
+\begin{itemize}
+	\item \textbf{Admin} — Responsible for system configuration
+	\item \textbf{Receptionist} — Appointment coordinator
+	\item \textbf{Patient} — Service beneficiary
+	\item \textbf{Doctor} — Healthcare service provider
+\end{itemize}
+
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.4} 
+	\begin{tabularx}{\textwidth}{l L}
+		\toprule
+		\textbf{Use Case} & \textbf{Functional Description} \\ 
+		\midrule
+		Login & Secure authentication gate required for all internal operations. \\ \addlinespace
+		Manage System & Configuration of clinic parameters and security logs. \\ \addlinespace
+		Manage Appointments & The lifecycle of booking, scheduling, and confirmation. \\ \addlinespace
+		Manage Medical Records & Centralized management of patient clinical data. \\ 
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+%===================
+% 7.2.1.2	Admin 
+%===================
+\newpage
+\paragraph{7.2.1.2 The Admin Role:}
+	The Admin maintains full authority over the system's structural data, including staff accounts and service pricing.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth]{diagrams/UC_admin.pdf}
+	\caption{Admin Use Case Diagram}
+\end{figure}
+
+\subsection*{Functional Breakdown}
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.3}
+	\begin{tabularx}{\textwidth}{l X l}
+		\toprule
+		\textbf{Use Case} & \textbf{Description} & \textbf{Included Actions} \\
+		\midrule
+		Manage Users & Staff account lifecycle management & Add/Update/Deactivate \\
+		Manage Doctors & Specialized professional data control & Medical Credentials \\
+		Manage Specialties & Defining clinic medical departments & Add/Update \\
+		Manage Services & Controlling services and pricing lists & Set Pricing \\
+		View Reports & Extracting analytical and financial data & Activity Logs \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+%===================
+% 	Doctor 
+%===================
+\newpage
+\paragraph{7.2.1.3 The Doctor Role:}
+	Focused on clinical efficiency, this module enables doctors to document consultations and manage medical history.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth]{diagrams/UC_doctor.pdf}
+	\caption{Doctor Use Case Diagram}
+\end{figure}
+
+\subsection*{Clinical Use Case Analysis}
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.3}
+	\begin{tabularx}{\textwidth}{l X l}
+		\toprule
+		\textbf{Use Case} & \textbf{Description} & \textbf{Technical Note} \\
+		\midrule
+		View Daily List & Access list of scheduled patients & Schedule-link \\
+		Set Availability & Manage working hours and leaves & Real-time update \\
+		Patient History & Review previous clinical notes & Read access \\
+		Add Diagnosis & Document current medical condition & Write access \\
+		Create Prescription & Generate digital medication orders & Integrated flow \\
+		Reset Password & Self-service credential recovery & Extend relationship \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+%===================
+% Patient 
+%===================
+\newpage
+\paragraph{7.2.1.4 The Patient Role:}
+	The Patient module empowers end-users to manage their healthcare journey autonomously.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth]{diagrams/UC_patient.pdf}
+	\caption{Patient Use Case Diagram}
+\end{figure}
+
+\subsection*{Patient Interaction Analysis}
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.3}
+	\begin{tabularx}{\textwidth}{l X l}
+		\toprule
+		\textbf{Use Cases} & \textbf{Description} & \textbf{Category} \\
+		\midrule
+		Register/Login & Secure account management & Access Control \\
+	Book/Cancel/View & Full control over personal bookings & Appointments \\
+		View Records/Labs & Secure access to medical documentation & Health Records \\
+		Invoices/Pay & Managing dues and online payments & 	Financials \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+%===================
+% Receptionist 
+%===================
+\newpage
+\paragraph{7.2.1.5 The Receptionist Role:}
+This role manages the "Front-Desk" operations, acting as the primary coordinator for clinic traffic.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth]{diagrams/UC_receptionist.pdf}
+	\caption{Receptionist Use Case Diagram}
+\end{figure}
+
+\subsection*{Operations Analysis}
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.3}
+	\begin{tabularx}{\textwidth}{l X l}
+		\toprule
+		\textbf{Category} & \textbf{Technical Description} & \textbf{Key Use Cases} \\
+		\midrule
+		Patient Intake & Registering and verifying patient identity & Search/Register \\
+		Scheduling & Managing the doctor's calendar & Create/Reschedule \\
+		Billing & Converting visits to financial claims & Invoice/Receipt \\
+		Operational Check & Updating arrival status (Check-In) & Physical arrival \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
