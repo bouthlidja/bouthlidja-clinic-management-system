@@ -1,0 +1,38 @@
+# =========================
+# LaTeX temporary files
+# =========================
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+
+# Generated PDFs (optional)
+*.pdf
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Editor folders
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Keep LaTeX source files
+# =========================
+!*.tex
+!*.bib
+!*.sty
+!*.cls
