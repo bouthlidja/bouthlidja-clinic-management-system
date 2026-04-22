@@ -9,12 +9,18 @@
 \usepackage{longtable}
 \usepackage{array}
 \usepackage{fancyhdr}
-\usepackage{booktabs}   % لتحسين جودة الخطوط الأفقية
-\usepackage{tabularx}   % للتحكم المرن في عرض الأعمدة
-\usepackage{longtable}  % للجداول الطويلة
-\usepackage{ltablex}    % لدمج ميزات tabularx مع longtable
+\usepackage{booktabs}   
+\usepackage{tabularx}   
+\usepackage{longtable}  
+\usepackage{ltablex}    
+\usepackage{booktabs}  
+\usepackage{tabularx}   
+\usepackage{ltablex}    
+\usepackage[table]{xcolor} 
 
-% تعريف نوع عمود جديد للنصوص الطويلة مع محاذاة لليسار
+
+\definecolor{mainblue}{RGB}{0, 102, 204}
+
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 
 \geometry{margin=2.5cm}
@@ -45,6 +51,8 @@
 	\input{sections/05_rtm.tex}
 	\newpage
 	\input{sections/06_non_functional_requirements.tex}
+	\newpage
+	\input{sections/07_other_requirements.tex}
 	\newpage
 	
 \end{document}
