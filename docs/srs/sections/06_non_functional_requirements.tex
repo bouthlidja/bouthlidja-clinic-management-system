@@ -72,7 +72,7 @@ All PHI operations logged with User ID, Timestamp, Action.
 Daily encrypted backups, 30-day rolling retention, 2-hour restore.
 
 \subsubsection{Session Management Policy}
-15-minute timeout, restricted concurrent logins, secure tokens.
+The system shall implement an automatic logout mechanism after a default 15-minute inactivity period. The Administrator shall have the authority to customize this duration based on clinic workflow requirements, provided it remains within predefined security limits.
 
 \subsubsection{Password \& Authentication Policy}
 8+ chars, bcrypt hashing, 90-day rotation, lockout after 5 failures.
