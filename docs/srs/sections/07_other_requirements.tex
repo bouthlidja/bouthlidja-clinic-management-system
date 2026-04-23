@@ -190,3 +190,137 @@ This role manages the "Front-Desk" operations, acting as the primary coordinator
 		\bottomrule
 	\end{tabularx}
 \end{table}
+%=========================
+% 	Activity Diagram
+%=========================
+\newpage
+\subsubsection{Activity Diagram}
+
+\paragraph{7.2.2.1 Admin Activity Diagram}
+This Activity Diagram illustrates the high-level operational flow for the System Administrator. 
+It utilizes swimlanes to categorize actions between the Admin, the System logic, and the Database, 
+providing a clear view of how administrative tasks are processed.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/ACT-admin.pdf}
+	\caption{Admin Activity Diagram — Clinic Management System}
+\end{figure}
+
+\paragraph{Workflow Explanation}
+	\begin{enumerate}
+	\item \textbf{Dashboard Initialization}  
+	Each session starts with automatic statistical data loading, providing immediate insights such as revenue and patient count.
+	
+	\item \textbf{Decision Branching}  
+	The workflow splits into three major administrative domains:
+	
+	\begin{itemize}
+		\item \textbf{Identity \& Access Management:} Managing doctors and staff lifecycle (Add, Edit, Deactivate).
+		\item \textbf{Business Intelligence:} Generating and exporting reports based on time filters.
+		\item \textbf{Global Configuration:} Defining clinic operational settings such as working hours and metadata.
+	\end{itemize}
+	\item \textbf{Consolidated Persistence}Regardless of the chosen path, all workflows converge at the Database lane for a synchronized "Save and Log" operation, ensuring that the Audit Trail is never bypassed.
+\end{enumerate}
+
+%=========================
+% 	Patient Appointment Booking (Guest Flow) Activity Diagram
+%=========================
+
+
+\paragraph{7.2.2.2 Patient Appointment Booking (Guest Flow) Activity Diagram}
+This Activity Diagram maps the autonomous booking journey for guest patients. It emphasizes system resilience and automated guidance through conditional logic and feedback loops.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/ACT-book-appointment.png}
+	\caption{Patient Appointment Booking (Guest Flow) Activity Diagram — Clinic Management System}
+\end{figure}
+
+	\begin{enumerate}
+		\item \textbf{Proactive Validation} The system performs immediate data validation and secondary availability checks in the Database lane. This ensures that the record is only created if the time slot remains vacant at the exact moment of submission.
+		\item \textbf{Technological Integration} The workflow features an automated QR Code generation process. By encoding a unique Booking ID, the system provides the patient with a digital credential that bridges the gap between the online portal and the physical clinic check-in. 
+		\item \textbf{Intelligent Recovery (The "Slot Taken" Loop} In the event of a concurrency conflict (where a slot is taken mid-process), the system does not simply terminate. Instead, it fetches Suggested Other Slots, allowing the user to re-route their request without restarting the entire form. 
+		\item \textbf{End-to-End Automation} The process concludes with a downloadable Booking Slip, ensuring the patient has tangible proof of their reservation.
+	\end{enumerate}
+
+
+
+
+
+
+%=========================
+% 	Medical Examination And Consultation Flow Activity Diagram
+%=========================
+\newpage
+
+\paragraph{7.2.2.3 Medical Examination And Consultation Flow Activity Diagram}
+	This Activity Diagram illustrates the clinical workflow during a patient consultation. It highlights the transformation of physical observations into structured digital medical records through a collaborative process between the Doctor, the System, and the Database.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/ACT-medical-examination.pdf}
+	\caption{Medical Examination And Consultation Flow Activity Diagram}
+\end{figure}
+
+\paragraph{Workflow Explanation}
+\begin{enumerate}
+	\item \textbf{Information Retrieval}  
+	The process is data-driven; the System automatically retrieves the patient’s historical records the moment a selection is made, ensuring the Doctor has a complete longitudinal view of the patient’s health before the examination begins.
+	\item \textbf{Decision-Based Prescription}  
+	The workflow incorporates a conditional branch for medication. If a prescription is required, the system provides a specialized interface for entry; otherwise, it proceeds directly to data validation.	
+	\item \textbf{Integrity and Persistence}  
+	All clinical findings (Diagnosis and Treatment) undergo a system validation check before being committed to the DBMS. This ensures that the medical record is updated accurately and remains available for future consultations.
+	\item \textbf{Professional Closure}
+	The activity concludes with the generation of a Digital Prescription and a final confirmation by the Doctor, reinforcing the professional responsibility and communication with the patient.
+\end{enumerate}
+%=========================
+% 	 Patient Billing and Payment
+%=========================
+
+\newpage
+\paragraph{7.2.2.4Patient Billing and Payment Activity Diagram}
+	This Activity Diagram maps the financial settlement process at the end of a medical visit. It highlights the system's ability to handle dynamic pricing based on insurance coverage and ensures synchronous updates across the financial and clinical modules..
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/ACT-patient-billing-payment.pdf}
+	\caption{Patient Billing and Payment Activity Diagram}
+\end{figure}
+
+\paragraph{Workflow Explanation}
+\begin{enumerate}
+	\item \textbf{Dynamic Billing Logic}
+	The workflow starts with an automated fetch of all services rendered during the visit. The system integrates a conditional logic for Insurance Coverage, allowing for real-time discount applications before the final invoice is generated.
+	\item \textbf{Error Handling and Resilience}
+	The diagram incorporates a failure branch for payment processing. If a transaction is declined, the system guides the Receptionist to inform the patient and retry, preventing "orphan" invoices that are neither paid nor cancelled.
+	\item \textbf{Database Synchronization}
+	Upon successful payment, the Database lane performs a dual update: recording the financial transaction for accounting and marking clinical services as "Billed" to prevent duplicate charging.
+	\item \textbf{Document Lifecycle}
+	The process concludes with the generation and printing of both the Invoice and the Receipt, providing a complete audit trail for both the patient and the clinic administration.
+\end{enumerate}
+% ==========================================
+% Receptionist Activity Diagram
+% ==========================================
+\newpage
+\paragraph{7.2.2.5 Receptionist Activity Diagram}
+This Activity Diagram details the initial reception phase, focusing on the transition from "Appointment Booking" to "Physical Presence." It highlights the system's multi-channel search capabilities and data reconciliation logic.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/ACT-receptionist.pdf}
+	\caption{Receptionist Activity Diagram}
+\end{figure}
+
+\paragraph{Workflow Explanation}
+	\begin{enumerate}
+	\item \textbf{Multi-Identifier Search}
+	The workflow showcases a robust search logic within the System lane. By allowing identification via Phone, Name, ID, or QR Code, the system minimizes wait times and human error during the peak check-in hours.
+	\item \textbf{Status Synchronization}
+	When an appointment is found, the system performs an automated status update to "Arrived." This informs the Doctor’s dashboard in real-time that the patient is ready in the waiting area.
+	\item \textbf{Profile Reconciliation}The diagram intelligently handles three entry scenarios:
+	\begin{itemize}
+		\item Pre-booked patients with existing profiles.
+		\item Returning patients without a current appointment.
+		\item New "Walk-in" patients requiring a full profile creation.
+	\end{itemize}
+	\item \textbf{Final Documentation}
+	The process culminates in the Database lane for record persistence, followed by the generation of a Visit Slip, ensuring the patient has a physical or digital reference for their turn.
+\end{enumerate}
