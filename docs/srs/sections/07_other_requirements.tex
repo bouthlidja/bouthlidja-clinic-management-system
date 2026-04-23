@@ -240,7 +240,7 @@ This Activity Diagram maps the autonomous booking journey for guest patients. It
 	\begin{enumerate}
 		\item \textbf{Proactive Validation} The system performs immediate data validation and secondary availability checks in the Database lane. This ensures that the record is only created if the time slot remains vacant at the exact moment of submission.
 		\item \textbf{Technological Integration} The workflow features an automated QR Code generation process. By encoding a unique Booking ID, the system provides the patient with a digital credential that bridges the gap between the online portal and the physical clinic check-in. 
-		\item \textbf{Intelligent Recovery (The "Slot Taken" Loop} In the event of a concurrency conflict (where a slot is taken mid-process), the system does not simply terminate. Instead, it fetches Suggested Other Slots, allowing the user to re-route their request without restarting the entire form. 
+		\item \textbf{Intelligent Recovery (The "Slot Taken" Loop)} In the event of a concurrency conflict (where a slot is taken mid-process), the system does not simply terminate. Instead, it fetches Suggested Other Slots, allowing the user to re-route their request without restarting the entire form. 
 		\item \textbf{End-to-End Automation} The process concludes with a downloadable Booking Slip, ensuring the patient has tangible proof of their reservation.
 	\end{enumerate}
 
@@ -278,7 +278,7 @@ This Activity Diagram maps the autonomous booking journey for guest patients. It
 %=========================
 
 \newpage
-\paragraph{7.2.2.4Patient Billing and Payment Activity Diagram}
+\paragraph{7.2.2.4 Patient Billing and Payment Activity Diagram}
 	This Activity Diagram maps the financial settlement process at the end of a medical visit. It highlights the system's ability to handle dynamic pricing based on insurance coverage and ensures synchronous updates across the financial and clinical modules..
 \begin{figure}[H]
 	\centering
@@ -324,3 +324,24 @@ This Activity Diagram details the initial reception phase, focusing on the trans
 	\item \textbf{Final Documentation}
 	The process culminates in the Database lane for record persistence, followed by the generation of a Visit Slip, ensuring the patient has a physical or digital reference for their turn.
 \end{enumerate}
+%=========================================
+% 7.3 Appendix C: To Be Determined List
+%=========================================
+\newpage
+\subsection{Appendix C: To Be Determined List}
+\textbf{Description:} This appendix lists the functional and technical requirements that are currently identified but require further analysis, external integration details, or administrative decisions before final implementation.
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.4}
+	\begin{tabularx}{\textwidth}{l X X}
+		\toprule
+		\textbf{ID} & \textbf{Item / Requirement} & \textbf{Reason for TBD Status} \\
+		\midrule
+		TBD-01 & Payment Gateway Integration & Awaiting specific API documentation from local Algerian banks (e.g., SATIM) or postal services (CCP/Baridimob). \\ \addlinespace
+		TBD-02 & SMS Notification Provider & Choosing between local SMS gateway providers for appointment reminders based on cost and API reliability. \\ \addlinespace
+		TBD-03 & Biometric Authentication & Evaluating the feasibility of using fingerprint scanners for staff login vs. traditional credentials. \\ \addlinespace
+		TBD-04 & Data Migration Strategy & Decisions needed on the format of legacy patient data (if any) to be imported into the new MySQL/Oracle database. \\ \addlinespace
+		TBD-05 & Cloud Hosting Provider & Comparing local hosting regulations for medical data vs. international providers (Azure/AWS). \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
