@@ -1,0 +1,55 @@
+\section{System Architecture}
+
+\subsection{Architectural Overview}
+The Clinic Management System is designed as a centralized web-based application operating within a distributed architecture that clearly separates presentation, business logic, and data storage responsibilities.
+
+The system follows a three-tier architecture composed of:
+
+\begin{itemize}
+	\item \textbf{Presentation Layer}: implemented using Vue.js as a Single Page Application (SPA), providing an interactive and responsive user interface accessible through modern web browsers on PCs, laptops, and tablets.
+	\item \textbf{Application Layer}: implemented using PHP as a RESTful API, responsible for handling business logic, authentication, authorization, appointment management, medical records processing, and billing operations.
+	\item \textbf{Data Layer}: implemented using a MySQL relational database management system to ensure reliable storage and retrieval of patient records, appointments, user accounts, and financial data.
+\end{itemize}
+
+This architectural separation ensures high maintainability, scalability, security, and performance, while supporting the needs of the four primary user classes: System Administrator, Receptionist, Doctor, and Patient.
+
+The system is compatible with Linux and Windows Server environments and operates over secure HTTPS connections within both LAN and WAN networks, ensuring safe and efficient access to medical data.
+
+\subsection{Architectural Style}
+The Clinic Management System adopts a \textbf{Client–Server Architectural Style} combined with a \textbf{Three-Tier Architecture} to ensure separation of concerns, scalability, security, and maintainability.
+
+In this architecture, the web browser acts as a smart client responsible for rendering dynamic user interfaces using Vue.js, while the PHP server acts as a service provider exposing business functionalities through RESTful APIs. Communication between the client and server is performed using JSON over secure HTTPS connections.
+
+This architectural style was selected based on the following design and implementation constraints identified in the SRS:
+
+\begin{itemize}
+	\item \textbf{Technical Stack Constraint}: The system is strictly implemented using PHP for the backend, Vue.js with HTML5/CSS3/JavaScript for the frontend, and MySQL as the relational database.
+	\item \textbf{Security and Privacy Constraint}: Medical data requires strict Role-Based Access Control (RBAC), encrypted credentials, and enforcement of the Principle of Least Privilege.
+	\item \textbf{Availability Constraint}: The system must guarantee at least 99\% uptime during clinic working hours.
+	\item \textbf{Communication Constraint}: All data exchange must occur via HTTPS using JSON format, compatible with both LAN and WAN environments.
+	\item \textbf{Software Interface Constraint}: Secure database interaction is handled through PHP PDO, and the backend exposes RESTful APIs for interoperability with the frontend and potential future mobile applications.
+	\item \textbf{Extensibility Constraint}: The design allows future integration with external payment gateways through dedicated hooks within the Payments module.
+\end{itemize}
+
+\subsubsection{Rationale for Choosing Client–Server Architecture}
+The Client–Server style was chosen for the following reasons:
+
+\begin{itemize}
+	\item \textbf{Separation of Concerns}: Clear separation between presentation logic and business logic simplifies maintenance and future updates.
+	\item \textbf{Interoperability}: Enables future integration with mobile or third-party systems without modifying the backend architecture.
+	\item \textbf{Scalability}: Each tier (presentation, application, data) can be scaled independently based on system load.
+	\item \textbf{Security Enforcement}: Centralizing business logic on the server ensures strict enforcement of authentication, authorization, and audit trails through the Active\_log table.
+	\item \textbf{Performance Optimization}: Lightweight JSON communication reduces network overhead and improves response time.
+\end{itemize}
+
+This architectural style fully aligns with the system's operational, security, and technical requirements defined in the SRS.
+
+\subsection{Component Diagram}
+The following Component Diagram illustrates how the Clinic Management System is decomposed into logical business components according to the adopted Client--Server and Three-Tier architectural style. The diagram shows the interaction between the Presentation Layer (Web UI), the Business Components (Engine), and the Data Layer (Database), as well as the internal dependencies between core modules such as Appointment Management, EMR Management, Billing, and Payments.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{diagrams/component-diagram.pdf}
+	\caption{Component Diagram of the Clinic Management System}
+	\label{fig:component-diagram}
+\end{figure}
