@@ -1,43 +1,23 @@
-\section{Introduction}
-
-\subsection{Purpose}
-This document provides a detailed description of the software design for the medical clinic management system, in accordance with the Software Design Document standard.
-It serves as a primary technical reference that explains how the requirements specified in the Software Requirements Specification are transformed into a clear architectural design and implementable software modules.
-
-This document is intended for developers, software engineers, and any technical stakeholders involved in building, maintaining, or evolving the system. It describes the system architecture, data design, module design, and the interaction between system components.
-
-\subsection{Scope}
-This design covers a comprehensive web-based system dedicated to managing a medical clinic. The system enables the management of patients, doctors, reception staff, and administrators, while securely maintaining electronic medical records in an organized manner.
-
-The system provides an integrated set of operational functionalities covering user management, patient management, appointment scheduling, medical records, and financial billing, as follows:
-
-\begin{enumerate}
-	\item Manage user accounts (doctors, staff, receptionists) with create, update, and deactivate capabilities while preserving historical activity logs.
-	\item Manage medical specialties and related services, including pricing and default service duration.
-	\item View and track audit logs with filtering and search by user, date, and action type.
-	\item Register patients using a unique identifier (National ID or phone number) while preventing duplicate records.
-	\item Display the complete Electronic Medical Record (EMR), including previous diagnoses, prescriptions, and medical history.
-	\item Provide fast patient search by name or phone number with a response time not exceeding two seconds.
-	\item Manage appointments with a mechanism that prevents scheduling conflicts for the same doctor at the same date and time.
-	\item Reschedule or cancel appointments with real-time updates to doctor availability.
-	\item Display a real-time daily appointment list for doctors and receptionists.
-	\item Record diagnoses and clinical notes associated with each patient visit.
-	\item Generate electronic prescriptions linked to diagnoses and store them in the patient’s EMR.
-	\item Link diagnoses to selected medical services to enable automatic invoice calculation.
-	\item Automatically generate electronic invoices based on services provided during the visit.
-	\item Record full or partial payments and issue an electronic receipt for each transaction.
-	\item Provide daily and monthly financial reports categorized by medical specialty.
-\end{enumerate}
-
-The design adopts a clear architectural approach (MVC / Layered Architecture) to ensure maintainability, scalability, and a high level of data security, relying on web technologies and a centralized database.
-
-\subsection{Definitions}
-% أضف هنا جدول التعاريف أو القائمة حسب الحاجة
-% مثال:
-% \begin{longtable}{|p{3cm}|p{10cm}|}
-	% \hline
-	% \textbf{Term} & \textbf{Definition} \\ \hline
-	% EMR & Electronic Medical Record \\ \hline
-	% MVC & Model-View-Controller \\ \hline
-	% \end{longtable}
-	\end{document}  % لا تضع هذا السطر لأنه ليس نهاية المستند، ولكنني وضعته للتوضيح فقط
+\begin{titlepage}
+	\centering
+	
+	\vspace*{2cm}
+	
+	{\Huge \textbf{Clinic Management System}}\\[0.5cm]
+	
+	{\Large Software Design Document (SDD)}\\[2cm]
+	
+	{\large \textbf{Prepared by}}\\[0.3cm]
+	Ali Bouthlidja\\[1cm]
+	
+	{\large \textbf{Academic Year}}\\[0.3cm]
+	2025 / 2026\\[1cm]
+	
+	{\large \textbf{Version}}\\[0.3cm]
+	v1.0\\[2cm]
+	
+	\vfill
+	
+	{\large \textit{Clinic Management System - SDD Document}}
+	
+\end{titlepage}

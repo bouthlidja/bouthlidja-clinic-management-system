@@ -1,0 +1,40 @@
+\section{Design Goals and Constraints}
+
+This section of the Software Design Document aims to describe the engineering philosophy that guided the architectural decisions of the medical clinic management system, as well as the technical and operational constraints that influenced the choice of technologies and overall system structure.
+
+\subsection{Design Goals}
+
+The system has been designed according to a set of engineering objectives that ensure a robust, secure, scalable, and maintainable solution. The main design goals are:
+
+\begin{enumerate}
+	\item \textbf{Maintainability} \\
+	The system adopts the MVC pattern and a layered architecture to facilitate future maintenance, updates, and debugging processes.
+	
+	\item \textbf{Scalability} \\
+	The architecture supports the growth of users, data volume, and system features without requiring major structural changes.
+	
+	\item \textbf{Security} \\
+	Strong emphasis is placed on protecting sensitive medical and financial data through role-based access control (RBAC), secure session management, and input validation.
+	
+	\item \textbf{Performance} \\
+	The system is optimized to ensure fast response times, particularly in patient search operations and appointment management.
+	
+	\item \textbf{Reliability} \\
+	The design ensures data integrity, prevents appointment conflicts, and maintains consistent and accurate audit logs.
+	
+	\item \textbf{Usability} \\
+	The user interface is designed to be simple and intuitive for doctors, reception staff, and administrators.
+\end{enumerate}
+
+\subsection{Design Constraints}
+
+The system design is influenced by several technical and operational constraints that shaped its architecture and technology choices:
+
+\begin{enumerate}
+	\item The system is developed as a web application accessible only through a browser, using Vue.js to implement a Single Page Application (SPA) for improved performance and user experience.
+	\item The backend is implemented using the PHP programming language.
+	\item The system relies on a centralized relational database management system, specifically MySQL.
+	\item The deployment environment is limited to the clinic's existing hardware and network infrastructure.
+	\item The project is constrained by a fixed development timeline and limited resources.
+	\item The system enforces a fully electronic record-keeping approach, eliminating any paper-based medical records.
+\end{enumerate}
