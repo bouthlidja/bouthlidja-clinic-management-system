@@ -18,6 +18,20 @@
 \usepackage{ltablex}    
 \usepackage[table]{xcolor} 
 
+\renewcommand{\arraystretch}{1.25}
+
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{titlesec}
+
+\captionsetup{font=small,labelfont=bf}
+
+\setlist[itemize]{noitemsep, topsep=3pt, leftmargin=1.5cm}
+\setlist[enumerate]{noitemsep, topsep=3pt, leftmargin=1.5cm}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
 
 
 \definecolor{mainblue}{RGB}{0, 102, 204}
@@ -50,5 +64,7 @@
 	\input{sections/02_design_goals_constraints.tex}
 	\newpage
 \input{sections/03_system-architecture.tex}
+\newpage
+\input{sections/04_component-design.tex}
 	
 \end{document}

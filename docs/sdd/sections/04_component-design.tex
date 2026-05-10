@@ -1,0 +1,493 @@
+\section{Component Design}
+
+\subsection{Component Diagram (Overview)}
+The following component diagram presents the internal software structure of the Clinic Management System and illustrates how the Presentation Layer, Engine Layer, and Data Layer collaborate to fulfill the system's functional and security requirements defined in the SRS.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{diagrams/component-diagram.pdf}
+	\caption{Component Diagram of the Clinic Management System}
+	\label{fig:component-diagram}
+\end{figure}
+
+At the top, the Presentation Layer (Vue.js SPA) contains the Web UI, which represents the single entry point for all user interactions. The user interface does not access the database directly; instead, it communicates exclusively with the backend through secure RESTful API calls over HTTPS.
+
+The Engine Layer (PHP -- Business Logic \& API) contains the core business components responsible for implementing system rules and use case flows:
+
+\begin{itemize}
+	\item \textbf{Authentication \& RBAC} manages login, sessions, and role-based permissions.
+	\item \textbf{User Management} handles creation and maintenance of system users.
+	\item \textbf{Patient Management} manages patient registration and search with duplicate prevention.
+	\item \textbf{Appointment Management} enforces scheduling rules and conflict prevention.
+	\item \textbf{EMR Management} manages medical records, diagnoses, and prescriptions.
+	\item \textbf{Billing Engine} generates invoices based on linked medical services.
+	\item \textbf{Payment Engine} records payments and generates receipts.
+	\item \textbf{Reporting Engine} produces financial and operational reports.
+	\item \textbf{Audit \& Logging} records all system activities into the audit trail.
+\end{itemize}
+
+These components interact with each other according to business workflows. For example, Appointment Management depends on Patient Management and EMR Management, EMR Management triggers the Billing Engine, and Billing interacts with the Payment Engine. Additionally, critical operations across modules are logged through the Audit component.
+
+At the bottom, the Data Layer (MySQL Database) contains the Database Schema, which stores all operational, medical, financial, and audit data. All engine components communicate with the database using secure PDO connections and enforced integrity constraints. The Backup \& Recovery Service is directly linked to the database to ensure daily encrypted backups and fast restoration as defined in the backup policy.
+
+This diagram clearly demonstrates the separation of concerns enforced by the three-tier architecture:
+\begin{itemize}
+	\item The UI is responsible only for presentation and user interaction.
+	\item The Engine centralizes business logic, security enforcement, and API exposure.
+	\item The Database ensures data integrity, classification, and persistence.
+\end{itemize}
+
+The component relationships shown here directly support the system's use cases, functional requirements (REQ-1 to REQ-15), security policies, and health data governance rules defined in the SRS.
+\subsection{Web Application (Vue.js Frontend)}
+The Web Application represents the presentation layer of the Clinic Management System and is implemented using Vue.js as a Single Page Application (SPA).
+
+This layer is responsible for rendering the user interface, handling user interactions, performing client-side validation, and communicating with the backend services via RESTful APIs.
+
+The design of the frontend strictly follows the user roles, functional requirements, and use case scenarios defined in the SRS to ensure that each user class interacts only with the components relevant to their responsibilities.
+
+\subsubsection{Frontend Architectural Principles}
+The frontend is designed based on the following principles:
+\begin{itemize}
+	\item Role-based interface rendering (RBAC-driven UI)
+	\item Component reusability and modularity
+	\item Real-time client-side validation for critical operations
+	\item Minimal cognitive load through specialized dashboards
+	\item Clear separation between UI components and API service handlers
+\end{itemize}
+
+\subsubsection{Main UI Modules (Derived from Use Cases \& Functional Requirements)}
+Based on the Use Case Diagrams and Functional Requirements, the Vue.js application is divided into the following main UI modules:
+
+\begin{enumerate}
+	\item \textbf{Authentication Module}
+	\begin{itemize}
+		\item Login
+		\item Register (Patient)
+		\item Reset Password
+		\item Session handling
+	\end{itemize}
+	\item \textbf{Dashboard Module}
+	\begin{itemize}
+		\item Admin Dashboard (log active, statistics, reports access)
+		\item Doctor Dashboard (daily appointments, medical record, schedule)
+		\item Receptionist Dashboard (appointments \& check-in)
+		\item Patient Dashboard (appointments \& records)
+	\end{itemize}
+	\item \textbf{User Management UI (Admin)}
+	\begin{itemize}
+		\item Create / Update / Deactivate users (REQ-1)
+		\item Manage doctors, specialties, and services (REQ-2)
+		\item View audit logs and reports (REQ-3, REQ-15)
+	\end{itemize}
+	\item \textbf{Patient Management UI (Receptionist)}
+	\begin{itemize}
+		\item Register new patient with duplicate prevention (REQ-4)
+		\item Search patient within 2 seconds (REQ-6)
+		\item View and update patient profile
+	\end{itemize}
+	\item \textbf{Appointment Management UI}
+	\begin{itemize}
+		\item Create appointment with conflict prevention (REQ-7)
+		\item Reschedule / cancel appointment (REQ-8)
+		\item View daily appointments (REQ-9)
+		\item Check doctor availability
+	\end{itemize}
+	\item \textbf{Medical Records UI (Doctor)}
+	\begin{itemize}
+		\item View complete EMR (REQ-5)
+		\item Record diagnosis and clinical notes (REQ-10)
+		\item Generate electronic prescription (REQ-11)
+		\item Link services to diagnosis (REQ-12)
+	\end{itemize}
+	\item \textbf{Billing \& Payments UI (Receptionist)}
+	\begin{itemize}
+		\item Automatic invoice display (REQ-13)
+		\item Record partial/full payments (REQ-14)
+		\item Print receipt
+		\item View patient invoices (Patient role)
+	\end{itemize}
+	\item \textbf{Reports UI (Admin)}
+	\begin{itemize}
+		\item Financial reports by specialty (REQ-15)
+		\item Activity and audit reports
+	\end{itemize}
+\end{enumerate}
+\subsubsection{Component Structure}
+Each module is implemented as a set of Vue components. Table~\ref{tab:component-structure} summarizes the main components.
+\begin{table}[H]
+	\centering
+	\caption{Vue Component Structure by Module}
+	\label{tab:component-structure}
+	\begin{tabularx}{\textwidth}{l X}
+		\toprule
+		\textbf{Module} & \textbf{Example Vue Components} \\
+		\midrule
+		Authentication & LoginView, RegisterView, ResetPasswordView \\[6pt]
+		Dashboard & AdminDashboard, DoctorDashboard, ReceptionDashboard, PatientDashboard \\[6pt]
+		Patients & PatientList, PatientForm, PatientProfile \\[6pt]
+		Appointments & AppointmentCalendar, CreateAppointment, ScheduleViewer \\[6pt]
+		Medical Records & EMRView, DiagnosisForm, PrescriptionForm \\[6pt]
+		Billing & InvoiceView, PaymentForm, ReceiptView \\[6pt]
+		Reports & FinancialReportView, AuditLogView \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+\subsubsection{Client-Side Validation and UX Behavior}
+In accordance with the SRS:
+\begin{itemize}
+	\item Real-time validation for patient registration and appointment booking
+	\item Confirmation dialogs for destructive actions (delete, deactivate)
+	\item Immediate feedback for scheduling conflicts
+	\item Responsive layout compatible with PCs, tablets, and laptops
+	\item Consistent typography and color palette for long-term daily use
+\end{itemize}
+
+\subsubsection{Interaction with Backend Services}
+All Vue components communicate with the backend through:
+\begin{itemize}
+	\item RESTful API calls over HTTPS
+	\item JSON-formatted data exchange
+	\item Token-based authenticated sessions
+	\item Error handling and user notifications based on API responses
+\end{itemize}
+
+\subsubsection{Traceability to SRS}
+This frontend design directly implements:
+\begin{itemize}
+	\item User Interfaces (Section 3.1)
+	\item User Classes (Section 2.3)
+	\item Functional Requirements (Section 4)
+	\item Use Case Diagrams (Appendix B)
+	\item Activity Diagrams (Appendix B)
+\end{itemize}
+\subsection{Engine  (Business Logic Layer)}
+The Engine represents the business logic layer of the Clinic Management System.
+
+It is implemented using PHP and exposed through RESTful APIs that serve JSON responses to the Vue.js frontend.
+
+This layer is responsible for enforcing business rules, validating operations, securing medical data, managing database transactions, and guaranteeing that all Functional Requirements defined in the SRS are correctly executed.
+
+\subsubsection{Architectural Responsibility of the Engine}
+The PHP backend is responsible for:
+\begin{itemize}
+	\item Implementing all business rules derived from Functional Requirements (REQ-1 → REQ-15)
+	\item Managing authentication and Role-Based Access Control (RBAC)
+	\item Preventing appointment conflicts and data duplication
+	\item Managing EMR integrity and medical records lifecycle
+	\item Handling invoice generation and payment processing
+	\item Logging all system activities into the Active\_Log table
+	\item Securing communication with the database using PDO
+	\item Providing RESTful endpoints consumed by the frontend
+\end{itemize}
+
+\subsubsection{Logical Backend Modules (Derived from RTM \& Use Cases)}
+Based on the Requirements Traceability Matrix and Use Case flows, the backend is divided into the logical modules shown in Table~\ref{tab:backend-modules}.
+\begin{longtable}{%
+		p{0.22\textwidth} 
+		p{0.43\textwidth} 
+		p{0.15\textwidth} 
+		p{0.20\textwidth}}
+	
+	\caption{Logical Backend Modules}
+	\label{tab:backend-modules} \\
+	
+	\toprule
+	\textbf{Backend Module} & \textbf{Responsibilities} & \textbf{Related REQs} & \textbf{Main DB Entities} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Backend Module} & \textbf{Responsibilities} & \textbf{Related REQs} & \textbf{Main DB Entities} \\
+	\midrule
+	\endhead
+	
+	Authentication \& RBAC & Login, session, permissions & All & User, Active\_Log \\[6pt]
+	User Management & Create/Update/Deactivate users & REQ-1 & User \\[6pt]
+	Specialty \& Services & Manage specialties and services & REQ-2 & Specialty, Service \\[6pt]
+	Audit \& Logging & View/search logs & REQ-3 & Active\_Log \\[6pt]
+	Patient Management & Register/search patients, prevent duplicates & REQ-4, REQ-6 & Patient \\[6pt]
+	Appointment Engine & Conflict prevention, reschedule, availability & REQ-7, REQ-8, REQ-9 & Appointment \\[6pt]
+	Medical Records Engine & EMR, diagnosis, notes, prescriptions & REQ-5, REQ-10, REQ-11 & Medical\_Record, Prescription \\[6pt]
+	Billing Engine & Link services, generate invoice & REQ-12, REQ-13 & Bill \\[6pt]
+	Payment Engine & Record payments, receipts & REQ-14 & Payment \\[6pt]
+	Reporting Engine & Financial reports by specialty & REQ-15 & Bill, Payment \\
+	
+	\bottomrule
+\end{longtable}
+\subsubsection{Business Rules Enforcement Examples}
+The engine enforces critical rules such as:
+\begin{itemize}
+	\item Prevent inserting an appointment if a conflicting slot exists for the same doctor (REQ-7)
+	\item Prevent registering a patient with duplicate National ID or Phone (REQ-4)
+	\item Automatically generate invoices after services are linked to diagnosis (REQ-12, REQ-13)
+	\item Automatically update doctor availability after reschedule/cancel (REQ-8)
+	\item Log every Create/Update/Delete operation with timestamp and user ID (REQ-3)
+\end{itemize}
+
+\subsubsection{Database Communication Layer}
+The backend communicates with the database using:
+\begin{itemize}
+	\item PHP PDO for secure prepared statements
+	\item Transaction management for medical and billing operations
+	\item Enforcement of data integrity constraints defined in the schema
+	\item Encryption at rest for sensitive fields
+\end{itemize}
+
+\subsubsection{Security and Health Data Governance Enforcement}
+The Engine enforces the policies defined in SRS section 6.7:
+\begin{itemize}
+	\item BCrypt password hashing
+	\item AES encryption for sensitive financial/medical data
+	\item HTTPS/TLS for data in transit
+	\item Principle of Least Privilege through RBAC
+	\item Full audit trail of PHI access
+	\item Data retention policies:
+	\begin{itemize}
+		\item Medical records: 10 years
+		\item Audit logs: 5 years
+	\end{itemize}
+	\item Daily encrypted backups and disaster recovery support
+\end{itemize}
+
+\subsubsection{REST API Layer}
+The PHP engine exposes RESTful endpoints such as:
+
+
+\begin{longtable}{%
+		p{0.30\textwidth} 
+		p{0.70\textwidth}}
+	
+	\caption{REST API Endpoints}
+	\label{tab:api-endpoints} \\
+	
+	\toprule
+	\textbf{Endpoint} & \textbf{Purpose} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Endpoint} & \textbf{Purpose} \\
+	\midrule
+	\endhead
+	
+	/api/auth/* & Authentication \& session \\[6pt]
+	/api/users/* & User management \\[6pt]
+	/api/patients/* & Patient registration \& search \\[6pt]
+	/api/appointments/* & Scheduling \& availability \\[6pt]
+	/api/emr/* & Medical records \& prescriptions \\[6pt]
+	/api/billing/* & Invoices generation \\[6pt]
+	/api/payments/* & Payment processing \\[6pt]
+	/api/reports/* & Financial reports \\[6pt]
+	/api/logs/* & Audit logs \\
+	
+	\bottomrule
+\end{longtable}
+All endpoints:
+\begin{itemize}
+	\item Accept and return JSON
+	\item Require authenticated tokens
+	\item Validate role permissions before execution
+\end{itemize}
+
+\subsubsection{Traceability to SRS}
+This engine design directly implements:
+\begin{itemize}
+	\item Functional Requirements (Section 4)
+	\item Software Interfaces (Section 3.3)
+	\item Security \& Health Data Governance (Section 6.7)
+	\item Requirements Traceability Matrix (Section 5)
+	\item Use Case and Activity Diagrams (Appendix B)
+\end{itemize}
+
+\subsection{Database Layer}
+The Database Layer represents the core data foundation of the Clinic Management System.
+
+It is responsible for storing, protecting, classifying, and organizing all medical, operational, and financial data in accordance with the Functional Requirements, Security Policies, and Health Data Governance rules defined in the SRS.
+
+This layer is designed to guarantee:
+\begin{itemize}
+	\item Data integrity
+	\item Conflict prevention
+	\item High-speed retrieval (\(\leq\) 2 seconds for patient search -- REQ-6)
+	\item Full traceability of system operations
+	\item Secure handling of PII, PHI, and financial data
+	\item Direct support for all Use Case flows and backend modules
+\end{itemize}
+
+\subsubsection{Data Classification (from SRS – Health Data Governance)}
+\begin{longtable}{%
+		p{0.30\textwidth} 
+		p{0.45\textwidth} 
+		p{0.25\textwidth}}
+	
+	\caption{Data Classification}
+	\label{tab:data-classification} \\
+	
+	\toprule
+	\textbf{Data Type} & \textbf{Description} & \textbf{Example Tables} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Data Type} & \textbf{Description} & \textbf{Example Tables} \\
+	\midrule
+	\endhead
+	
+	PII (Personally Identifiable Information) & Identifies a patient or staff member & Patient, User \\[6pt]
+	PHI (Protected Health Information) & Medical history and diagnoses & Medical\_Record, Prescription \\[6pt]
+	Financial Data & Billing and payments & Bill, Payment \\[6pt]
+	System Logs & System activity and audit trail & Active\_Log \\
+	
+	\bottomrule
+\end{longtable}
+\subsubsection{Core Database Entities (Derived from Use Cases \& REQs)}
+Table~\ref{tab:core-entities} lists the core entities and their purposes.
+\begin{longtable}{%
+		p{0.30\textwidth} 
+		p{0.45\textwidth} 
+		p{0.25\textwidth}}
+	
+	\caption{Core Database Entities}
+	\label{tab:core-entities} \\
+	
+	\toprule
+	\textbf{Entity} & \textbf{Purpose} & \textbf{Related REQs} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Entity} & \textbf{Purpose} & \textbf{Related REQs} \\
+	\midrule
+	\endhead
+	
+	User & Doctors, Receptionists, Admins & REQ-1, REQ-3 \\[6pt]
+	Specialty & Medical specialties & REQ-2 \\[6pt]
+	Service & Medical services, pricing, duration & REQ-2, REQ-12 \\[6pt]
+	Patient & Patient registration \& identity & REQ-4, REQ-6 \\[6pt]
+	Appointment & Scheduling \& conflict prevention & REQ-7, REQ-8, REQ-9 \\[6pt]
+	Medical\_Record & Diagnoses and clinical notes & REQ-5, REQ-10 \\[6pt]
+	Prescription & Electronic prescriptions & REQ-11 \\[6pt]
+	Analysis Request & Electronic analysis request & REQ-11 \\[6pt]
+	Bill & Auto-generated invoices & REQ-12, REQ-13 \\[6pt]
+	Payment & Payments and receipts & REQ-14 \\[6pt]
+	Active\_Log & Audit trail of all operations & REQ-3 \\
+	
+	\bottomrule
+\end{longtable}
+\subsubsection{How the Database Enforces Business Rules}
+Unlike simple storage, this database is designed to enforce system rules:
+\begin{itemize}
+	\item Unique constraint on Patient (National ID, Phone) $\rightarrow$ prevents duplicates (REQ-4)
+	\item Composite constraint on Appointment (Doctor, Date, Time) $\rightarrow$ prevents double booking (REQ-7)
+	\item Foreign key chaining from:
+	\begin{itemize}
+		\item Medical\_Record $\rightarrow$ Patient $\rightarrow$ Appointment
+		\item Prescription $\rightarrow$ Medical\_Record
+		\item Bill $\rightarrow$ Services linked to Diagnosis
+	\end{itemize}
+	\item Cascading logging triggers into Active\_Log for every CUD operation (REQ-3)
+	\item Indexing on Patient name and phone $\rightarrow$ search \(\leq\) 2 seconds (REQ-6)
+\end{itemize}
+
+\subsubsection{Support for Use Case Flows}
+The schema directly enables the main Use Case scenarios:
+\begin{itemize}
+	\item \textbf{Patient Registration Use Case} $\rightarrow$ Patient table with uniqueness rules
+	\item \textbf{Appointment Booking Use Case} $\rightarrow$ Appointment with conflict constraint
+	\item \textbf{Doctor Consultation Use Case} $\rightarrow$ Medical\_Record + Prescription
+	\item \textbf{Billing Use Case} $\rightarrow$ Bill generated from linked Services
+	\item \textbf{Payment Use Case} $\rightarrow$ Payment linked to Bill
+	\item \textbf{Audit Use Case} $\rightarrow$ Active\_Log capturing all actions
+\end{itemize}
+
+\subsubsection{Security Enforcement at Data Level}
+In compliance with SRS Security section:
+\begin{itemize}
+	\item Passwords stored using BCrypt hashing in User
+	\item Sensitive fields encrypted (AES) at rest
+	\item Role-based access enforced through User roles
+	\item PHI access logged through Active\_Log
+	\item Principle of Least Privilege applied via DB permissions
+\end{itemize}
+
+\subsubsection{Backup \& Recovery Policy}
+As defined in the SRS:
+\begin{itemize}
+	\item Daily encrypted backups
+	\item 30-day rolling retention
+	\item Maximum restore window: 2 hours
+	\item Off-site encrypted storage support
+\end{itemize}
+
+\subsubsection{Concurrency Control (Optimistic Locking)}
+To handle simultaneous access by multiple users (e.g., doctor and receptionist updating the same patient record):
+\begin{itemize}
+	\item An \texttt{updated\_at} timestamp column is added to all critical tables: Patient, Medical\_Record, Appointment, Bill.
+	\item Before performing an UPDATE or DELETE, the Engine checks that the \texttt{updated\_at} value matches the one retrieved by the client.
+	\item If a mismatch is detected, the Engine returns HTTP 409 Conflict with the message: "Record has been modified by another user. Please refresh and try again."
+	\item The frontend then prompts the user to reload the latest data before retrying.
+\end{itemize}
+This optimistic locking strategy prevents lost updates without the performance overhead of database-level locks.
+
+\subsubsection{Failure Handling and Resilience}
+The Database Layer is designed to handle failures gracefully as shown in Table~\ref{tab:failure-handling}.
+\begin{longtable}{%
+		p{0.35\textwidth} 
+		p{0.65\textwidth}}
+	
+	\caption{Failure Handling Strategies}
+	\label{tab:failure-handling} \\
+	
+	\toprule
+	\textbf{Failure Scenario} & \textbf{Handling Strategy} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Failure Scenario} & \textbf{Handling Strategy} \\
+	\midrule
+	\endhead
+	
+	Transaction failure (e.g., billing + medical record update) & Full rollback using \texttt{PDO::beginTransaction()} / \texttt{rollBack()}. No partial data is committed. \\[6pt]
+	
+	Database connection loss & Engine implements retry logic (max 3 attempts, exponential backoff: 100ms, 200ms, 400ms). After 3 failures, API returns HTTP 503 Service Unavailable. \\[6pt]
+	
+	Query timeout (>5 seconds) & Engine cancels the query and returns HTTP 504 Gateway Timeout. Frontend shows friendly error: "System is busy. Please try again in a few moments." \\[6pt]
+	
+	Deadlock detected & Engine automatically retries the transaction once after a short delay (50ms). If deadlock persists, rolls back and returns HTTP 500 with a reference ID for admin investigation. \\[6pt]
+	
+	Disk full / write failure & Database rejects write operations; Engine logs critical alert and returns HTTP 507 Insufficient Storage. \\
+	
+	\bottomrule
+\end{longtable}
+All failures are logged in the Active\_Log table with severity level ERROR and a unique trace ID for debugging.
+\subsection{Traceability Matrix Summary (Component to SRS)}
+Table~\ref{tab:traceability} summarizes how each component maps to SRS sections and requirements.
+\begin{longtable}{%
+		p{0.25\textwidth} 
+		p{0.50\textwidth} 
+		p{0.25\textwidth}}
+	
+	\caption{Traceability Matrix: Component to SRS}
+	\label{tab:traceability} \\
+	
+	\toprule
+	\textbf{Component} & \textbf{Implements SRS Sections} & \textbf{Key REQs} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Component} & \textbf{Implements SRS Sections} & \textbf{Key REQs} \\
+	\midrule
+	\endhead
+	
+	4.1 Web Application & 3.1 User Interfaces, 2.3 User Classes, Appendix B (Use Cases) & All UI-related \\[6pt]
+	
+	4.2 Engine & 4 (Functional Requirements), 3.3 Software Interfaces, 6.7 Security & REQ-1 to REQ-15 \\[6pt]
+	
+	4.3 Database Layer & 4 (Functional Requirements), 6.7 Security, Health Data Governance & REQ-1 to REQ-15 \\[6pt]
+	
+	4.4 Interaction Flow & Use Case diagrams, Activity diagrams (Appendix B) & REQ-7, REQ-8, REQ-13 \\
+	
+	\bottomrule
+\end{longtable}
