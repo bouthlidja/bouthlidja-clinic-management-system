@@ -1,0 +1,620 @@
+\section{Sequence Diagrams}
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.1
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{ Admin Authentication \& Dashboard Sequence}
+\begin{center}
+	\includegraphics[width=\textwidth]{diagrams/seq-01.pdf}
+	\captionof{figure}{Admin Authentication \& Dashboard Sequence}
+	\label{fig:admin-auth-seq}
+\end{center}
+
+This Sequence Diagram illustrates the interaction between the Administrator, the System, and the Database (DBMS) during the authentication process and the
+subsequent loading of the dashboard.\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Authentication Flow}
+	\begin{itemize}
+		\item The process begins with the Admin submitting credentials.
+		\item The System validates these credentials against the DBMS.
+		\item An \textbf{Alternative Frame (alt)} handles two scenarios:
+		\begin{itemize}
+			\item \textbf{Success:} The user is authenticated and granted access to the system.
+			\item \textbf{Failure:} An error message is triggered and access is denied.
+		\end{itemize}
+	\end{itemize}
+	
+	\item \textbf{Data Retrieval (Dashboard Request)}
+	\begin{itemize}
+		\item Upon successful login, the Admin requests the Dashboard.
+		\item The System executes a query to the DBMS to \textbf{fetch statistics} (e.g., total patients, appointments, revenue).
+	\end{itemize}
+	
+	\item \textbf{Data Processing and Presentation}
+	\begin{itemize}
+		\item After receiving the raw data, the System processes it (\textbf{Load Dashboard Statistics}).
+		\item The System renders the final visual dashboard interface for the Admin.
+	\end{itemize}
+\end{itemize}
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.2
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Admin Authentication with Logging}
+\addcontentsline{toc}{subsection}{0.2 Admin Authentication with Logging}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-02.pdf}
+	\caption{Admin Authentication with Logging}
+	\label{fig:admin-auth-logging}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram extends the basic authentication
+	flow by integrating a Security Audit Mechanism. It demonstrates how the system tracks
+	access attempts for security monitoring and compliance.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Audit Integration:} Unlike the standard login, this flow includes a
+	mandatory interaction with the \texttt{Active\_log} (via the DBMS) inside the
+	alternative block (\texttt{alt}).
+	
+	\item \textbf{Security Logging Scenarios:}
+	\begin{itemize}
+		\item \textbf{Success Logging:} If credentials are valid, the system
+		triggers a \texttt{Log(action: LOGIN\_SUCCESS)} before granting
+		access, creating a permanent record of the session.
+		\item \textbf{Failure Logging:} In case of incorrect credentials, the
+		system records a \texttt{Log(action: LOGIN\_FAILED)}. This is a
+		critical feature to detect Brute Force attacks.
+	\end{itemize}
+	
+	\item \textbf{Data Integrity:} The logging action is performed directly on the
+	Database level, ensuring that even if the user session ends or is interrupted,
+	the security record remains intact.
+\end{itemize}
+
+\subsection{Admin User Management Sequence}
+\addcontentsline{toc}{subsection}{0.3 Admin User Management Sequence}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-03.pdf}
+	\caption{Admin User Management Sequence}
+	\label{fig:admin-user-mgmt}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram details the operational flow for
+	managing system users, including Doctors and Staff members. It illustrates the
+	administrative control over the system's human resources through two primary
+	workflows: Creation and Modification.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Workflow Selection:} The process begins with the Administrator
+	selecting a specific user category, which triggers the system to provide the
+	relevant management interface via a dynamic Control Panel.
+	
+	\item \textbf{Administrative Operations (\texttt{alt} frame):}
+	\begin{itemize}
+		\item \textbf{Creation Flow (Add New User):} This branch demonstrates
+		initializing a new record, submitting validated data, and committing
+		it to the DBMS. The system provides immediate feedback upon
+		successful insertion.
+		\item \textbf{Modification Flow (Edit / Deactivate):} This covers the
+		lifecycle of existing records. It allows the admin to retrieve current
+		details and modify fields or change the user's status to
+		\textit{Deactivated} (Soft Delete) to maintain historical data
+		integrity.
+	\end{itemize}
+	
+	\item \textbf{Data Persistence:} All operations culminate in a confirmation from
+	the DBMS, ensuring that the user interface is always synchronized with the
+	actual state of the database, preventing Data Inconsistency.
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.4
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{ Admin User Management with Logging}
+\addcontentsline{toc}{subsection}{0.4 Admin User Management with Logging}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-02.pdf}
+	\caption{Admin User Management with Logging}
+	\label{fig:admin-user-mgmt-logging}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the Secure Resource
+	Provisioning flow. It emphasizes the mandatory audit step required for sensitive
+	administrative actions, such as creating new user accounts, ensuring every transaction
+	is fully traceable.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Transactional Integrity:} The process follows a strict sequence where
+	user data is first persisted in the primary user table. Only after receiving a
+	\textbf{Save Confirmation} from the DBMS does the system proceed to the
+	next phase.
+	
+	\item \textbf{Traceability (Security Logging):} A secondary interaction with the
+	DBMS is performed to execute the \texttt{Log(action: CREATE\_USER)}
+	command. This ensures that every new account is linked to the specific
+	Administrator, providing a clear Audit Trail for security monitoring.
+	
+	\item \textbf{Sequential Synchronization:} To prevent ``unlogged actions,'' the
+	Success Message is only delivered to the Admin after both the primary data
+	saving and the secondary logging are successfully confirmed by the database.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.5
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection*{0.5 \quad Admin Report Generation and Export}
+\addcontentsline{toc}{subsection}{0.5 Admin Report Generation and Export}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-05.pdf}
+	\label{fig:admin-report-export}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the lifecycle of report
+	generation and the secure export of clinical or financial data. It highlights the system's
+	ability to transform raw database records into portable document formats while
+	maintaining a strict audit trail for data privacy.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Data Aggregation:} The process begins with the Administrator's
+	request, triggering the System to \textit{``Fetch Data''} from the DBMS.
+	This step involves complex queries to aggregate statistics or detailed patient
+	history.
+	
+	\item \textbf{Internal Processing (PDF Generation):} A self-invocation message
+	\textit{Generate PDF} represents the logic layer where the system (utilizing
+	PHP libraries) formats the raw data into a structured, read-only document.
+	
+	\item \textbf{Security \& Compliance:} Before the file is provided, the system
+	executes a \texttt{Log(action: REPORT\_EXPORT)}. This ensures that any
+	data leaving the system is tracked, satisfying critical requirements for medical
+	data privacy and HIPAA-style standards.
+	
+	\item \textbf{Secure Delivery:} The final \textit{``Export File''} is delivered to
+	the Admin only after the logging action is confirmed. This ensures full
+	accountability for the distribution of sensitive clinical or financial information.
+\end{itemize}
+
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.6
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Admin Settings Update with Logging}
+\addcontentsline{toc}{subsection}{0.6 Admin Settings Update with Logging}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-06.pdf}
+	\caption{Admin Settings Update with Logging}
+	\label{fig:admin-settings-logging}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram details the flow for modifying
+	global system configurations. Given the high impact of these settings on the
+	application's behavior, the process integrates an immediate auditing step to ensure
+	transparency and stability.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Configuration Persistence:} When the Admin submits updated
+	settings, the System interacts directly with the \texttt{Config/Settings}
+	table. This ensures that global parameters (such as clinic hours, contact
+	info, or system thresholds) are applied instantly across the entire platform.
+	
+	\item \textbf{Audit Enforcement:} Following a successful update, the System
+	triggers a \texttt{Log(action: UPDATE\_SETTINGS)} entry. This record serves
+	as a critical reference point for troubleshooting or security reviews if system
+	behavior is altered.
+	
+	\item \textbf{Final Confirmation:} The Administrator receives a
+	\textit{``Settings Saved''} notification only after the database confirms both
+	the configuration update and the security log entry, ensuring total
+	synchronization between the UI and the actual System State.
+\end{itemize}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.7
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Reports and System Settings Sequence}
+\addcontentsline{toc}{subsection}{0.7 Reports and System Settings Sequence}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.82\textwidth]{diagrams/seq-07.pdf}
+	\caption{Admin Reports \& Settings Sequence}
+	\label{fig:admin-reports-settings}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram provides a consolidated view of
+	two critical administrative functions: Data Analytics and System Configuration. It
+	demonstrates how the system handles diverse requests through conditional logic to
+	maintain operational efficiency.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Reporting Workflow (Data Analytics):}
+	\begin{itemize}
+		\item \textbf{Parameter Definition:} The Administrator initiates the
+		process by defining specific parameters such as Report Type and
+		Date Range.
+		\item \textbf{Visual Transformation:} The System fetches the relevant
+		dataset from the DBMS and performs an internal process
+		(\textit{Generate Graphical Report}) to transform raw data into
+		visual formats like charts or tables.
+		\item \textbf{Optional Export:} An optional \textit{``Export''} step
+		allows the user to download the final document for offline use or
+		archiving.
+	\end{itemize}
+	
+	\item \textbf{Settings Management Workflow:}
+	\begin{itemize}
+		\item \textbf{Dynamic Updates:} This section covers the update of clinic
+		metadata and operational constraints through two distinct
+		interactions: updating general information and modifying
+		organizational rules (Working Hours).
+		\item \textbf{Real-time Synchronization:} Each action triggers a direct
+		update to the DBMS, ensuring that clinical availability and
+		system-wide information are always current and synchronized across
+		the platform.
+	\end{itemize}
+\end{itemize}
+
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.8
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Doctor Consultation and Medical Record Creation}
+\addcontentsline{toc}{subsection}{0.8 Doctor Consultation and Medical Record Creation}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-08.pdf}
+	\caption{Doctor Consultation and Medical Record Creation}
+	\label{fig:doctor-consultation}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the critical clinical
+	workflow, divided into two primary stages: information retrieval and data persistence.
+	It showcases the seamless interaction between the Doctor, the Vue.js Interface, the
+	PHP Controller, and the Database to ensure high-quality patient care.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Stage 1 -- Historical Review (Data Retrieval):} The process begins
+	with the Doctor retrieving the patient's medical history. The System executes
+	a secure query to the DBMS to fetch all previous records, ensuring the Doctor
+	has the necessary clinical context before the examination begins.
+	
+	\item \textbf{Stage 2 -- Secure Data Entry \& Validation:} Upon entering the
+	diagnosis and treatment plans, the \texttt{Consultation Controller} performs
+	an internal validation check to ensure data consistency before attempting
+	persistence.
+	
+	\item \textbf{Transaction Management (Data Integrity):} To ensure total
+	integrity, the system utilizes a Database Transaction
+	(\texttt{BEGIN / COMMIT}). The medical record is inserted, and a security
+	log is simultaneously generated as part of a single unit of work.
+	
+	\item \textbf{Atomic Operations:} If any part of the process fails, a
+	\texttt{ROLLBACK} is triggered to prevent partial or corrupted data. A
+	Success Message is only displayed after a successful commit, guaranteeing
+	that the medical history is accurately and permanently updated.
+\end{itemize}
+
+
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.9
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Guest Appointment Booking (No Login)}
+\addcontentsline{toc}{subsection}{0.9 Guest Appointment Booking (No Login)}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-09.pdf}
+	\caption{Guest Appointment Booking (No Login)}
+	\label{fig:guest-booking}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram details the workflow for
+	spontaneous booking by guest patients. It emphasizes real-time availability checking
+	and atomic data handling to ensure a seamless and secure entry point into the system
+	for unauthenticated users.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Availability Management (Real-time):} The process starts with a
+	dynamic fetch of available slots from the DBMS. The system filters records in
+	real-time to ensure only \textbf{``Free''} slots are displayed, preventing
+	overbooking directly at the UI level.
+	
+	\item \textbf{Guest Data Validation:} Since the user is not authenticated, the
+	\texttt{Booking Controller} performs rigorous server-side validation on the
+	provided contact information (Name, Phone, National ID) to maintain high
+	data quality and integrity.
+	
+	\item \textbf{Resource Reservation (Race Condition Prevention):} To prevent
+	Race Conditions -- where multiple guests might attempt to book the same slot
+	simultaneously -- the system wraps the appointment insertion and the slot
+	status update within a strict Database Transaction.
+	
+	\item \textbf{Output Generation \& Bridging:} Upon a successful \texttt{COMMIT},
+	the system generates a unique Booking Slip (PDF/QR Code). This serves as a
+	temporary credential, effectively bridging the gap between an anonymous
+	guest and a formally registered patient record upon arrival.
+\end{itemize}
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.10
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection*{0.10 \quad View Medical Records and Results (Post-Registration)}
+\addcontentsline{toc}{subsection}{0.10 View Medical Records and Results (Post-Registration)}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-10.pdf}
+	\caption{View Medical Records and Results (Post-Registration)}
+	\label{fig:patient-view-records}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the secure process for
+	registered patients to access their clinical data via the Patient Portal. It emphasizes a
+	multi-layered approach to authentication and data-level security to protect sensitive
+	medical history.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Secure Access (Authentication):} The workflow begins with a
+	mandatory authentication phase. Patients utilize secure credentials provided
+	by the clinic staff, ensuring that only verified individuals can access the
+	portal's services.
+	
+	\item \textbf{Access Control (Session Filtering):} A critical security measure is
+	implemented where the \texttt{Records Controller} filters the database query
+	to ensure the \texttt{patient\_id} strictly matches the active session. This
+	mechanism prevents Horizontal Privilege Escalation and unauthorized access
+	to other patients' records.
+	
+	\item \textbf{Audit Logging (Confidentiality):} Each time a patient views their
+	records, a \texttt{Log(action: VIEW\_RECORDS)} is generated. This maintains
+	a complete history of data access, ensuring compliance with medical
+	confidentiality standards and accountability.
+	
+	\item \textbf{Information Delivery:} The system provides a structured list of
+	medical histories and lab results. The interface allows patients to view or
+	download detailed reports in PDF format for personal archiving or sharing
+	with other healthcare providers.
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.11
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Online Payment and Invoicing}
+\addcontentsline{toc}{subsection}{0.11 Online Payment and Invoicing}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-11.pdf}
+	\caption{Online Payment and Invoicing}
+	\label{fig:patient-payment}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram details the financial transaction
+	workflow within the Patient Portal. It illustrates the seamless integration between the
+	clinic's internal logic and external Payment Gateways, ensuring secure and consistent
+	billing operations.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Invoicing Retrieval (Targeted Billing):} The process begins with the
+	System fetching unpaid invoices from the DBMS. This ensures that the Patient
+	only interacts with relevant billing data strictly associated with their specific
+	appointments and records.
+	
+	\item \textbf{External Gateway Integration (API Handling):} When the Patient
+	initiates payment, the \texttt{Payment Controller} communicates with an
+	external Payment Gateway (Bank) using secure tokens. This highlights the
+	system's architecture for handling external API responses and managing
+	asynchronous transaction statuses.
+	
+	\item \textbf{Atomic Financial Updates (Multi-table Consistency):} Upon a
+	successful transaction, the system utilizes a Database Transaction to
+	perform three simultaneous actions as a single unit:
+	\begin{itemize}
+		\item Updating the payment status to \texttt{'Paid'}.
+		\item Closing the billing cycle for the associated appointment.
+		\item Recording a security log (\texttt{ONLINE\_PAYMENT}) for financial
+		auditing.
+	\end{itemize}
+	
+	\item \textbf{Success \& Feedback (Legal Proof):} The workflow concludes with
+	the generation of a digital Receipt (PDF), providing the patient with
+	immediate legal proof of payment. The use of \texttt{COMMIT / ROLLBACK}
+	logic guarantees that no partial financial updates occur, maintaining absolute
+	data consistency.
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.12
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Patient Registration Sequence}
+\addcontentsline{toc}{subsection}{0.12 Patient Registration Sequence}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-12.pdf}
+	\caption{Patient Registration Sequence (Receptionist Module)}
+	\label{fig:patient-registration}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the standardized
+	procedure for onboarding new patients into the clinic's database. It emphasizes data
+	integrity and auditability through a rigorous two-step verification and creation process.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Duplicate Prevention (Integrity Check):} The workflow begins with
+	a mandatory search for existing records using unique identifiers (National ID
+	or Phone). This prevents the creation of redundant profiles, ensuring that
+	each patient maintains a single, consistent \textbf{Master Medical Record}.
+	
+	\item \textbf{Conditional Workflow (\texttt{alt} frame):} The system utilizes an
+	Alternative Frame (\texttt{alt}) to handle dynamic scenarios:
+	\begin{itemize}
+		\item \textbf{Existing Patient Found:} The system bypasses registration
+		and retrieves the current profile, preventing data fragmentation.
+		\item \textbf{New Patient Registration:} The system enables the entry
+		form only after confirming the absence of a duplicate record in
+		the DBMS.
+	\end{itemize}
+	
+	\item \textbf{Secure Persistence \& Accountability:} During registration, the
+	\texttt{Patient Controller} manages the insertion of personal details.
+	Simultaneously, a critical security log
+	\texttt{Log(action: REGISTER\_PATIENT)} is recorded. This links the new
+	record to the specific receptionist, ensuring full \textbf{Traceability} for
+	all administrative actions.
+\end{itemize}
+
+\newpage
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.13
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Appointment Booking And Availability}
+\addcontentsline{toc}{subsection}{0.13 Appointment Booking And Availability}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-14.pdf}
+	\caption{Appointment Booking And Availability}
+	\label{fig:appointment-booking}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates a robust workflow for
+	manual appointment scheduling by the Receptionist. It is designed to ensure maximum
+	data consistency and prevent double-booking through rigorous real-time validation.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Real-time Availability (Schedule View):} The system queries the
+	DBMS to identify existing appointments for a specific doctor and date. The
+	\texttt{Appointment Controller} then dynamically calculates free slots,
+	providing the Receptionist with an accurate, real-time visual representation
+	of the schedule.
+	
+	\item \textbf{Conflict Prevention (Validation Step):} Upon selecting a slot, the
+	system initiates a Database Transaction. It performs a critical secondary
+	\texttt{SELECT status} check to ensure the slot hasn't been reserved by
+	another user (e.g., via the Patient Portal) in the interval between viewing
+	and confirming.
+	
+	\item \textbf{Atomic Commitment \& Concurrency:}
+	\begin{itemize}
+		\item \textbf{Success:} If the slot remains available, the record is
+		inserted, the transaction is \texttt{COMMITTED}, and a security
+		log is generated.
+		\item \textbf{Failure (Rollback):} If a conflict is detected, the
+		transaction is \texttt{ROLLED BACK} immediately, protecting the
+		database from corrupted or overlapping schedules.
+	\end{itemize}
+	
+	\item \textbf{User Feedback:} The process concludes with either a printable
+	Appointment Slip for the patient or a mandatory schedule refresh in case of
+	failure, ensuring the UI is always synchronized with the DBMS state.
+\end{itemize}
+
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% 0.14
+% ══════════════════════════════════════════════════════════════════════════════
+\subsection{Billing And Receipt Generation}
+\addcontentsline{toc}{subsection}{0.14 Billing And Receipt Generation}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{diagrams/seq-14.pdf}
+	\caption{Billing And Receipt Generation}
+	\label{fig:billing-receipt}
+\end{figure}
+
+\textbf{Description:} \textit{This Sequence Diagram illustrates the final stage of the
+	patient visit: the transition from clinical service to financial settlement. It details how
+	the system ensures accurate billing and secure payment recording through automated
+	calculations and transactional integrity.}
+
+\medskip
+\textbf{Key Technical Logic:}
+
+\begin{itemize}
+	\item \textbf{Dynamic Invoice Calculation:} The process begins by fetching
+	service details and fees associated with the completed appointment. The
+	\texttt{Billing Controller} performs an internal calculation
+	(\texttt{Total = Services + Taxes}), ensuring the Receptionist presents an
+	accurate \textbf{``Invoice Draft''} before any transaction occurs.
+	
+	\item \textbf{Secure Payment Processing (Integrity):} Upon receiving payment,
+	the system initiates a Database Transaction. It records the payment details
+	and simultaneously updates the \texttt{billing\_status} to
+	\texttt{'Closed'}. This dual action ensures no appointment remains
+	``Unpaid'' in the records after a successful transaction.
+	
+	\item \textbf{Accountability \& Audit Trail:} A security log
+	\texttt{Log(action: GENERATE\_BILL)} is created to track the financial
+	transaction. This is critical for Daily Reconciliation and internal audits,
+	linking the revenue to the specific receptionist and appointment.
+	
+	\item \textbf{Document Output \& Finalization:} The workflow concludes with the
+	generation of a Digital Receipt (PDF). This provides a professional,
+	printable document for the patient while maintaining a permanent, immutable
+	digital copy within the system for future reference.
+\end{itemize}
