@@ -1,0 +1,411 @@
+\section{Interface Design}
+
+% ============================================================
+\subsection{APIs (RESTful API Design)}
+% ============================================================
+
+\subsubsection{Overview}
+
+All backend services are exposed as a RESTful API over HTTPS. The API follows a stateless, token-based authentication model using JWT (JSON Web Tokens). All requests and responses are formatted in JSON, and sensitive data is encrypted in transit using TLS 1.2+.
+
+\textbf{Base URL:} \texttt{https://api.clinic-system.com/v1}
+
+\medskip
+\textbf{Authentication:}
+Include the JWT token in the Authorization header:
+\begin{verbatim}
+	Authorization: Bearer <token>
+\end{verbatim}
+
+\medskip
+\textbf{Common HTTP Status Codes Used:}
+
+\begin{longtable}{%
+		p{0.12\textwidth}
+		p{0.22\textwidth}
+		p{0.26\textwidth}
+		p{0.40\textwidth}}
+	
+	\caption{HTTP Status Codes Used by the API}
+	\label{tab:http-status-codes} \\
+	
+	\toprule
+	\textbf{Code} & \textbf{Meaning} & \textbf{When Used} & \textbf{Notes} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Code} & \textbf{Meaning} & \textbf{When Used} & \textbf{Notes} \\
+	\midrule
+	\endhead
+	
+	200 & OK & Successful GET, PUT, PATCH & Request processed correctly and data returned \\[8pt]
+	201 & Created & Successful POST (new resource) & Resource successfully created in database \\[8pt]
+	400 & Bad Request & Validation error, missing required field & Client-side input validation failed \\[8pt]
+	401 & Unauthorized & Missing or invalid token & Authentication required or token expired \\[8pt]
+	403 & Forbidden & Authenticated but role not permitted & RBAC restriction prevents action \\[8pt]
+	404 & Not Found & Resource does not exist & Invalid ID or deleted resource \\[8pt]
+	409 & Conflict & Business rule violation (e.g., duplicate appointment) & Logical conflict with current system state \\[8pt]
+	422 & Unprocessable Entity & Semantic error (e.g., past date) & Data format correct but business rule invalid \\[8pt]
+	500 & Internal Server Error & Unexpected server error & Unhandled exception in engine \\[8pt]
+	503 & Service Unavailable & Database connection lost, timeout & Temporary backend failure, retry later \\
+	
+	\bottomrule
+\end{longtable}
+
+\medskip
+\textbf{Error Response Format:}
+\begin{verbatim}
+	{
+		"status": "error",
+		"code": 409,
+		"message": "Doctor already has an appointment at this time",
+	}
+\end{verbatim}
+
+All API calls that create, update, or delete data automatically trigger an audit log (\texttt{Active\_Log} table) with user ID, timestamp, action, and affected record (per REQ-3 and Health Data Governance 6.7.7).
+
+% ------------------------------------------------------------
+\subsubsection{API Endpoints Summary}
+% ------------------------------------------------------------
+
+The following table groups endpoints by functional area, linked to REQs and RBAC roles (Admin, Doctor, Receptionist, Patient).
+
+\begin{longtable}{%
+		p{0.14\textwidth}
+		p{0.26\textwidth}
+		p{0.32\textwidth}
+		p{0.16\textwidth}
+		p{0.12\textwidth}}
+	
+	\caption{API Endpoints, Roles, and Traceability to Requirements}
+	\label{tab:api-endpoints} \\
+	
+	\toprule
+	\textbf{Group} & \textbf{Method + Endpoint} & \textbf{Description} & \textbf{Permitted Roles} & \textbf{Related REQs} \\
+	\midrule
+	\endfirsthead
+	
+	\toprule
+	\textbf{Group} & \textbf{Method + Endpoint} & \textbf{Description} & \textbf{Permitted Roles} & \textbf{Related REQs} \\
+	\midrule
+	\endhead
+	
+	\textbf{Authentication}
+	& POST /auth/login          & Authenticate user, return JWT     & All & -- \\[8pt]
+	& POST /auth/logout         & Invalidate token                  & All & -- \\[8pt]
+	& POST /auth/refresh        & Refresh expired token             & All & -- \\[8pt]
+	& POST /auth/reset-password & Request password reset            & All & -- \\[10pt]
+	
+	\textbf{User Management}
+	& GET /users                & List all users (filterable)       & Admin & REQ-1 \\[8pt]
+	& POST /users               & Create new user                   & Admin & REQ-1 \\[8pt]
+	& PUT /users/\{id\}         & Update user                       & Admin & REQ-1 \\[8pt]
+	& DELETE /users/\{id\}      & Deactivate user (soft delete)     & Admin & REQ-1 \\[10pt]
+	
+	\textbf{Specialties \& Services}
+	& GET /specialties          & List all specialties              & Admin, Doctor & REQ-2 \\[8pt]
+	& POST /specialties         & Create specialty                  & Admin & REQ-2 \\[8pt]
+	& PUT /specialties/\{id\}   & Update specialty                  & Admin & REQ-2 \\[8pt]
+	& GET /services             & List services (by specialty)      & Admin, Doctor, Receptionist & REQ-2 \\[8pt]
+	& POST /services            & Create service                    & Admin & REQ-2 \\[8pt]
+	& PUT /services/\{id\}      & Update service                    & Admin & REQ-2 \\[8pt]
+	& DELETE /services/\{id\}   & Deactivate service                & Admin & REQ-2 \\[10pt]
+	
+	\textbf{Patient Management}
+	& GET /patients             & Search patients (name/phone) $\leq$ 2s & Receptionist, Doctor & REQ-6 \\[8pt]
+	& POST /patients            & Register new patient (duplicate check) & Receptionist & REQ-4 \\[8pt]
+	& GET /patients/\{id\}      & Get patient profile + EMR summary & Doctor, Receptionist, Patient (self) & REQ-5 \\[8pt]
+	& PUT /patients/\{id\}      & Update patient info               & Patient (self) or Receptionist & -- \\[10pt]
+	
+	\textbf{Appointment Management}
+	& GET /appointments         & Daily list (filter by doctor/date) & Doctor, Receptionist, Patient & REQ-9 \\[8pt]
+	& POST /appointments        & Book appointment (conflict prevention) & Receptionist, Patient & REQ-7 \\[8pt]
+	& PUT /appointments/\{id\}  & Reschedule appointment            & Receptionist, Patient & REQ-8 \\[8pt]
+	& DELETE /appointments/\{id\} & Cancel appointment              & Receptionist, Patient & REQ-8 \\[8pt]
+	& GET /doctors/\{id\}/availability & Check doctor free slots  & Receptionist, Patient & REQ-7 \\[10pt]
+	
+	\textbf{EMR (Medical Records)}
+	& GET /patients/\{id\}/emr  & Get complete EMR                  & Doctor, Patient (self) & REQ-5 \\[8pt]
+	& POST /patients/\{id\}/visits/\{visitId\}/diagnosis  & Add diagnosis + clinical notes & Doctor & REQ-10 \\[8pt]
+	& POST /patients/\{id\}/visits/\{visitId\}/prescription & Generate prescription & Doctor & REQ-11 \\[8pt]
+	& POST /patients/\{id\}/visits/\{visitId\}/services   & Link services to diagnosis & Doctor & REQ-12 \\[10pt]
+	
+	\textbf{Billing}
+	& GET /invoices             & List invoices (filter by patient) & Receptionist, Patient & REQ-13 \\[8pt]
+	& GET /invoices/\{id\}      & Get invoice details               & Receptionist, Patient & REQ-13 \\[8pt]
+	& POST /invoices            & Manually generate invoice (if not auto) & Receptionist & REQ-13 \\[10pt]
+	
+	\textbf{Payments}
+	& POST /payments            & Record full/partial payment       & Receptionist & REQ-14 \\[8pt]
+	& GET /payments/\{id\}/receipt & Download receipt PDF           & Receptionist, Patient & REQ-14 \\[10pt]
+	
+	\textbf{Reports}
+	& GET /reports/financial    & Daily/monthly revenue by specialty & Admin & REQ-15 \\[8pt]
+	& GET /reports/audit        & Filter audit logs (user/date/action) & Admin & REQ-3 \\
+	
+	\bottomrule
+\end{longtable}
+
+% ------------------------------------------------------------
+\subsubsection{Detailed API Specifications}
+% ------------------------------------------------------------
+
+Below are the most critical endpoints with request/response examples, business rules, and traceability.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.1 \quad Authentication}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{POST /auth/login} – Authenticate user and return JWT.
+
+\textbf{Request:}
+\begin{verbatim}
+	{
+		"username": "ali",
+		"password": "password_ali"
+	}
+\end{verbatim}
+
+\textbf{Response (200 OK):}
+\begin{verbatim}
+	{
+		"token": "eyJhbGciOiJIUzI1NiIs...",
+		"expires_in": 3600,
+		"users": {
+			"USR_ID": 42,
+			"USR_NM": "ali",
+			"ROL_NM": "Admin"
+		}
+	}
+\end{verbatim}
+
+\textbf{Errors:}
+\begin{itemize}
+	\item 401 – Invalid credentials or account deactivated.
+\end{itemize}
+
+\textbf{Audit:} Each login attempt (success/failure) is logged in \texttt{Active\_Log} with user ID (if known) and IP address.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.2 \quad Patient Management}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{POST /patients} – Register new patient (REQ-4).
+
+\textbf{Request:}
+\begin{verbatim}
+	{
+		"national_id": "29510231234567",
+		"full_name": "Ahmed ali",
+		"phone": "+213234567890",
+		"date_of_birth": "1985-06-15",
+		"address": "souk ahras algiare",
+		"email": "ahmed@example.com"
+	}
+\end{verbatim}
+
+\textbf{Response (201 Created):}
+\begin{verbatim}
+	{
+		"PAT_ID": 101,
+		"message": "Patient registered successfully",
+		"existing_duplicate": false
+	}
+\end{verbatim}
+
+\textbf{Business Rules:}
+\begin{itemize}
+	\item If \texttt{national\_id} or \texttt{phone} already exists $\rightarrow$ return 409 Conflict.
+	\item All PII fields are encrypted at rest using AES-256.
+\end{itemize}
+
+\medskip
+\textbf{GET /patients?query=Ahmed\&limit=10} – Search patients (REQ-6).
+
+\textbf{Response (200 OK):}
+\begin{verbatim}
+	{
+		"results": [
+		{ "id": 101, "full_name": "Ahmed ali", "phone": "+213234567890" },
+		{ "id": 102, "full_name": "Ahmed Kamal",   "phone": "+21311222333"  }
+		],
+		"query_time_ms": 180
+	}
+\end{verbatim}
+
+Indexes on \texttt{full\_name} and \texttt{phone} guarantee $\leq$ 2 seconds response.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.3 \quad Appointment Management}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{POST /appointments} – Book appointment with conflict prevention (REQ-7).
+
+\textbf{Request:}
+\begin{verbatim}
+	{
+		"patient_id": 101,
+		"doctor_id": 42,
+		"datetime": "2025-06-20T10:30:00",
+		"reason": "Routine checkup"
+	}
+\end{verbatim}
+
+\textbf{Response (201 Created):}
+\begin{verbatim}
+	{
+		"PAR_ID": 505,
+		"APP_STS": "confirmed",
+		"DOC_ID":101,
+		"APP_TIME": "2025-06-20T10:30:00"
+	}
+\end{verbatim}
+
+\textbf{Conflict Response (409 Conflict):}
+\begin{verbatim}
+	{
+		"status": "error",
+		"code": 409,
+		"message": "Doctor already has an appointment at this time."
+	}
+\end{verbatim}
+
+\textbf{Business Rule:} No two appointments for the same \texttt{doctor\_id} and \texttt{datetime}.
+
+\medskip
+\textbf{PUT /appointments/505} – Reschedule (REQ-8).
+
+\textbf{Request:}
+\begin{verbatim}
+	{
+		"new_datetime": "2025-06-21T11:00:00"
+	}
+\end{verbatim}
+
+\textbf{Response (200 OK):} Returns updated appointment with old slot freed.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.4 \quad EMR – Medical Records}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{POST /patients/101/visits/505/diagnosis} – Record diagnosis (REQ-10).
+
+\textbf{Request:}
+\begin{verbatim}
+	{
+		"diagnosis_code": "I10",
+		"diagnosis_text": "Essential hypertension",
+		"clinical_notes": "Patient advised lifestyle changes.",
+		"visit_date": "2025-06-20"
+	}
+\end{verbatim}
+
+\textbf{Response (201 Created):}
+\begin{verbatim}
+	{
+		"MED_ID": 330,
+		"message": "Diagnosis added to patient EMR"
+	}
+\end{verbatim}
+
+\medskip
+\textbf{POST /patients/101/visits/505/prescription} – Generate prescription (REQ-11).
+
+\begin{verbatim}
+	{
+		"medications": [
+		{ "drug_name": "Lisinopril", "dosage": "10mg",
+			"frequency": "Once daily", "duration_days": 30 }
+		],
+		"notes": "Take with food."
+	}
+\end{verbatim}
+
+\textbf{Response:}
+\begin{verbatim}
+	{
+		"PRE_ID": 88,
+		"pdf_url": "https://api.clinic-system.com/prescriptions/88.pdf"
+	}
+\end{verbatim}
+
+\medskip
+\textbf{POST /patients/101/visits/505/services} – Link services (REQ-12).
+
+\begin{verbatim}
+	{
+		"service_ids": [201, 205]
+	}
+\end{verbatim}
+
+\textbf{Response:}
+\begin{verbatim}
+	{
+		"message": "Services linked. Invoice auto-generated.",
+		"BILL_ID": 1201
+	}
+\end{verbatim}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.5 \quad Billing \& Payments}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{GET /invoices/1201} – View invoice (REQ-13).
+
+\begin{verbatim}
+	{
+		"id": 1201,
+		"patient_id": 101,
+		"items": [
+		{ "service": "Consultation",            "price": 300, "quantity": 1 },
+		{ "service": "Blood Pressure Monitoring","price": 100, "quantity": 1 }
+		],
+		"total": 400,
+		"paid": 0,
+		"balance": 400,
+		"status": "unpaid"
+	}
+\end{verbatim}
+
+\medskip
+\textbf{POST /payments} – Record payment (REQ-14).
+
+\begin{verbatim}
+	{
+		"invoice_id": 1201,
+		"amount": 400,
+		"payment_method": "cash",
+		"reference": "Receipt #784"
+	}
+\end{verbatim}
+
+\textbf{Response:}
+\begin{verbatim}
+	{
+		"PAY_ID": 77,
+		"PAY_STS": "paid",
+		"receipt_url": "https://api.clinic-system.com/receipts/77.pdf"
+	}
+\end{verbatim}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{5.1.3.6 \quad Reports}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+\textbf{GET /reports/financial?start\_date=2025-06-01\&end\_date=2025-06-30} (REQ-15)
+
+\begin{verbatim}
+	{
+		"period": { "from": "2025-06-01", "to": "2025-06-30" },
+		"total_revenue": 12500,
+		"by_specialty": [
+		{ "specialty": "Cardiology", "revenue": 5200, "appointments": 42 },
+		{ "specialty": "Pediatrics", "revenue": 4100, "appointments": 38 }
+		]
+	}
+\end{verbatim}
+
+\medskip
+\textbf{GET /reports/audit?user\_id=42\&from=2025-06-01\&action=DELETE} (REQ-3)
+
