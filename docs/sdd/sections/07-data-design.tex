@@ -29,8 +29,8 @@ This entity stores the core authentication and profile information for all syste
 		\toprule
 		\rowcolor[gray]{0.9} \textbf{Field Code} & \textbf{Type} & \textbf{Constraints} & \textbf{Description} \\
 		\midrule
-		USR\_ID       & INT           & \makecell[l]{PRIMARY KEY \\ AUTO\_INCREMENT}   & Unique identifier for the user. \\
-		ROL\_ID       & INT           & FOREIGN KEY                 & Links to the Role table. \\
+		USR\_ID        & INT           & \makecell[l]{PRIMARY KEY \\ AUTO\_INCREMENT}   & Unique identifier for the user. \\
+		ROL\_ID        & INT           & FOREIGN KEY                 & Links to the Role table. \\
 		USR\_LGN\_NM  & VARCHAR(50)   & NOT NULL                    & Username for login. \\
 		USR\_FLL\_NM  & VARCHAR(100)  & NOT NULL                    & Full name of the user. \\
 		USR\_PWD\_HSH & VARCHAR(255)  & NOT NULL                    & Encrypted password hash. \\
@@ -40,6 +40,9 @@ This entity stores the core authentication and profile information for all syste
 		USR\_BRTH     & DATE          & NOT NULL                    & User's date of birth. \\
 		USR\_ADDRS    & VARCHAR(255)  & NOT NULL                    & Residential address. \\
 		CRT\_AT       & TIMESTAMP     & \makecell[l]{DEFAULT \\ CURRENT\_TIMESTAMP} & Timestamp when the account was created. \\
+		PWD\_LST\_UPDT& TIMESTAMP     & \makecell[l]{DEFAULT \\ CURRENT\_TIMESTAMP} & Timestamp of the last password update (for 90-day rotation policy). \\
+		FLD\_LGN\_ATTMPTS & INT       & DEFAULT 0                   & Counter for failed login attempts (triggers lockout after 5). \\
+		IS\_LCKD      & BOOLEAN       & DEFAULT FALSE               & Indicates if the account is currently locked due to failed attempts. \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
@@ -279,16 +282,17 @@ The Bill entity manages the financial transactions resulting from medical appoin
 		\toprule
 		\rowcolor[gray]{0.9} \textbf{Field Code} & \textbf{Type} & \textbf{Constraints} & \textbf{Description} \\
 		\midrule
-		BILL\_ID & INT & PRIMARY KEY & Unique identifier for the invoice \\
-		APP\_ID  & INT & FOREIGN KEY & Links the bill to a specific clinical appointment \\
-		BILL\_TOT\_AMT & DECIMAL(10,2) & NOT NULL & Total calculated amount for the services provided \\
-		BILL\_PAY\_STS & VARCHAR(20) & NOT NULL & Current payment status (e.g., 'Unpaid', 'Partial', 'Paid') \\
-		BILL\_DT & DATE & DEFAULT (CURRENT\_DATE) & The formal date the invoice was generated \\
+		BILL\_ID & INT & PRIMARY KEY & Unique identifier for the invoice. \\
+		APP\_ID  & INT & FOREIGN KEY & Links the bill to a specific clinical appointment. \\
+		BILL\_TOT\_AMT & DECIMAL(10,2) & NOT NULL & Total calculated amount for the services provided. \\
+		BILL\_PAY\_STS & VARCHAR(30) & NOT NULL & Current payment lifecycle status. Must support: \texttt{'Unpaid'}, \texttt{'Processing'}, \texttt{'Paid'}, \texttt{'Partial'}, and \texttt{'Requires\_Reconciliation'}. \\
+		BILL\_DT & DATE & DEFAULT (CURRENT\_DATE) & The formal date the invoice was generated. \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
+
 \subsubsection{Payment Entity}
-The Payment entity records the actual monetary transactions associated with a bill. It tracks the amount paid, the date of transaction, and the method used (e.g., Cash, Card). This allows the system to handle multiple payments for a single bill and ensures accurate financial auditing.
+The Payment entity records the actual monetary transactions associated with a bill. It tracks the amount paid, the date of transaction, and the method used (e.g., Cash, Card). To prevent concurrency desynchronization (split-brain scenarios) with external financial networks, this entity securely stores unique transaction payload identifiers for background system audits.
 
 \begin{table}[H]
 	\centering
@@ -298,12 +302,13 @@ The Payment entity records the actual monetary transactions associated with a bi
 		\toprule
 		\rowcolor[gray]{0.9} \textbf{Field Code} & \textbf{Type} & \textbf{Constraints} & \textbf{Description} \\
 		\midrule
-		PAY\_ID & INT & PRIMARY KEY & Unique identifier for the payment transaction \\
-		BILL\_ID & INT & FOREIGN KEY & Links the payment to a specific invoice \\
-		PAY\_AMT & DECIMAL(10,2) & NOT NULL & The specific amount of money paid in this transaction \\
-		PAY\_DATE & DATE & NOT NULL & The actual date the payment was received \\
-		PAY\_MTHD & VARCHAR(20) & NOT NULL & Payment method (e.g., 'CASH', 'CREDIT\_CARD', 'INSURANCE') \\
-		PAY\_CRT\_DT & DATE & DEFAULT (CURRENT\_DATE) & System timestamp for when the payment record was created \\
+		PAY\_ID & INT & PRIMARY KEY & Unique identifier for the payment transaction. \\
+		BILL\_ID & INT & FOREIGN KEY & Links the payment to a specific invoice. \\
+		PAY\_AMT & DECIMAL(10,2) & NOT NULL & The specific amount of money paid in this transaction. \\
+		PAY\_DATE & DATE & NOT NULL & The actual date the payment was received. \\
+		PAY\_MTHD & VARCHAR(30) & NOT NULL & Payment method used (e.g., \texttt{'CASH'}, \texttt{'SATIM'}, \texttt{'BARIDIMOB'}, \texttt{'INSURANCE'}). \\
+		PAY\_EXT\_REF & VARCHAR(100) & UNIQUE, NULL & Unique transaction reference ID returned from the external payment gateway provider (TBD-01) used for background automated reconciliation. \\
+		PAY\_CRT\_DT & DATE & DEFAULT (CURRENT\_DATE) & System timestamp for when the payment record was created. \\
 		\bottomrule
 	\end{tabularx}
 \end{table}
