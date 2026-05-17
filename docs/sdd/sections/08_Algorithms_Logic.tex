@@ -1,0 +1,334 @@
+\section{Algorithms and Logic}
+
+This section describes the core algorithms that implement critical functional requirements. Each algorithm is presented with pseudocode, input/output specifications, and references to the corresponding SRS requirement.
+
+\subsection{User Account Management (REQ-1)}
+
+REQ-1 requires the ability to create, update, and deactivate user accounts (doctors and staff) while preserving historical activity logs.
+
+\subsubsection{Algorithm 1: Create User Account}
+
+\begin{algorithm}[H]
+	\caption{Create User Account}
+	\label{alg:create-user}
+	\begin{algorithmic}[1]
+		\REQUIRE $USR\_LGN\_NM$, $USR\_FLL\_NM$, $USR\_EML$, $USR\_PHN$, $USR\_GNDR$, $USR\_BRTH$, $USR\_ADDRS$, 
+		$plain\_password$, $ROL\_ID$, $created\_by$ (admin ID)
+		\ENSURE $USR\_ID$ or error
+		\STATE Validate input data (non-empty, valid email, valid phone, valid gender, date not future)
+		\STATE Check if $USR\_EML$ or $USR\_PHN$ already exists in \texttt{User} table
+		\IF{exists}
+		\RETURN error "Email or phone number already registered"
+		\ENDIF
+		\STATE $hashed\_pwd \leftarrow$ \textsc{BCryptHash}($plain\_password$)
+		\STATE $USR\_ID \leftarrow$ INSERT INTO \texttt{User} 
+		(USR\_LGN\_NM, USR\_FLL\_NM, USR\_EML, USR\_PHN, USR\_GNDR, USR\_BRTH, USR\_ADDRS, 
+		USR\_PWD\_HSH, ROL\_ID, CRT\_AT)
+		VALUES ($USR\_LGN\_NM$, $USR\_FLL\_NM$, $USR\_EML$, $USR\_PHN$, $USR\_GNDR$, $USR\_BRTH$, $USR\_ADDRS$,
+		$hashed\_pwd$, $ROL\_ID$, NOW())
+		\STATE CALL \textsc{LogActivity}($created\_by$, 'CREATE', 'User', $USR\_ID$, 'Created user account')
+		\RETURN $USR\_ID$
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Algorithm 2: Update User Account}
+
+\begin{algorithm}[H]
+	\caption{Update User Account}
+	\label{alg:update-user}
+	\begin{algorithmic}[1]
+		\REQUIRE $USR\_ID$, $updated\_by$ (admin ID), and optional fields: $USR\_LGN\_NM$, $USR\_FLL\_NM$, $USR\_EML$, $USR\_PHN$, $USR\_GNDR$, $USR\_BRTH$, $USR\_ADDRS$, $ROL\_ID$
+		\ENSURE success or error
+		\STATE Verify that $USR\_ID$ exists and the account is active (is\_active = true)
+		\IF{not exists or is\_active = false}
+		\RETURN error "User not found or already deactivated"
+		\ENDIF
+		\STATE Initialize SET clause as empty
+		\IF{$USR\_LGN\_NM$ is provided}
+		\STATE Append "USR\_LGN\_NM = $USR\_LGN\_NM$" to SET clause
+		\ENDIF
+		\IF{$USR\_FLL\_NM$ is provided}
+		\STATE Append "USR\_FLL\_NM = $USR\_FLL\_NM$" to SET clause
+		\ENDIF
+		\IF{$USR\_EML$ is provided}
+		\STATE Check uniqueness of new email (not used by another user)
+		\IF{not unique}
+		\RETURN error "Email already used by another account"
+		\ENDIF
+		\STATE Append "USR\_EML = $USR\_EML$" to SET clause
+		\ENDIF
+		\IF{$USR\_PHN$ is provided}
+		\STATE Check uniqueness of new phone
+		\IF{not unique}
+		\RETURN error "Phone number already used by another account"
+		\ENDIF
+		\STATE Append "USR\_PHN = $USR\_PHN$" to SET clause
+		\ENDIF
+		\IF{$USR\_GNDR$ is provided} \STATE Append "USR\_GNDR = $USR\_GNDR$" \ENDIF
+		\IF{$USR\_BRTH$ is provided} \STATE Append "USR\_BRTH = $USR\_BRTH$" \ENDIF
+		\IF{$USR\_ADDRS$ is provided} \STATE Append "USR\_ADDRS = $USR\_ADDRS$" \ENDIF
+		\IF{$ROL\_ID$ is provided} \STATE Append "ROL\_ID = $ROL\_ID$" \ENDIF
+		\IF{SET clause is empty}
+		\RETURN error "No fields to update"
+		\ENDIF
+		\STATE Append "UPDT\_AT = NOW()" to SET clause  (assuming there is an UPDT\_AT column; if not, use CRT\_AT? Usually there is an update timestamp)
+		\STATE Execute UPDATE \texttt{User} SET [SET clause] WHERE USR\_ID = $USR\_ID$
+		\STATE CALL \textsc{LogActivity}($updated\_by$, 'UPDATE', 'User', $USR\_ID$, 'Updated fields: ' . json\_encode(provided fields))
+		\RETURN success
+	\end{algorithmic}
+\end{algorithm}
+\subsubsection{Algorithm 3: Deactivate User Account}
+
+\begin{algorithm}[H]
+	\caption{Deactivate User Account}
+	\label{alg:deactivate-user}
+	\begin{algorithmic}[1]
+		\REQUIRE $USR\_ID$, $deactivated\_by$ (admin ID)
+		\ENSURE success or error
+		\STATE Verify that $USR\_ID$ exists and is currently active (USR\_IS\_ACTIVE = true)
+		\IF{not exists or USR\_IS\_ACTIVE = false}
+		\RETURN error "User already deactivated or does not exist"
+		\ENDIF
+		\STATE BEGIN TRANSACTION
+		\STATE UPDATE \texttt{User} SET 
+		USR\_IS\_ACTIVE = false, 
+		USR\_DEACTIVATED\_AT = NOW(),
+		UPDT\_AT = NOW()
+		WHERE USR\_ID = $USR\_ID$
+		\STATE CALL \textsc{LogActivity}($deactivated\_by$, 'DEACTIVATE', 'User', $USR\_ID$, 'Account deactivated')
+		\STATE COMMIT TRANSACTION
+		\RETURN success
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Audit Logging Procedure}
+
+All log entries are inserted into the \texttt{Active\_Log} table (REQ-3). The procedure \texttt{LogActivity} is defined as follows:
+
+\begin{algorithm}[H]
+	\caption{Log Activity Procedure}
+	\label{alg:log-activity}
+	\begin{algorithmic}[1]
+		\REQUIRE $USR\_ID$, $LOG\_TYP$, $LOG\_IP\_ADRS$
+		\STATE INSERT INTO \texttt{Active\_Log} 
+		(USR\_ID, LOG\_TYP, LOG\_ACT\_TM, LOG\_IP\_ADRS)
+		VALUES ($USR\_ID$, $LOG\_TYP$, NOW(), $LOG\_IP\_ADRS$)
+	\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Patient Registration with Duplicate Prevention (REQ-4)}
+
+REQ-4 requires that new patients be registered using a unique identifier (National ID or Phone number) and that duplicate records are prevented.
+
+\subsubsection{Algorithm 4: Register New Patient}
+
+\begin{algorithm}[H]
+	\caption{Register New Patient (with Duplicate Prevention)}
+	\label{alg:register-patient}
+	\begin{algorithmic}[1]
+		\REQUIRE $national\_id$, $full\_name$, $phone$, $date\_of\_birth$, $address$
+		\ENSURE $PAT\_ID$ or error
+		\STATE Validate input data (non-empty, valid national ID format, valid phone)
+		\STATE Check if $PAN\_NAT\_ID\_id$ already exists in \texttt{Patient} table
+		\IF{exists}
+		\RETURN error "Patient with this National ID already registered"
+		\ENDIF
+		\STATE Check if $phone$ already exists in \texttt{Patient} table
+		\IF{exists}
+		\RETURN error "Patient with this phone number already registered"
+		\ENDIF
+		\STATE $PAT\_ID \leftarrow$ INSERT INTO \texttt{Patient} 
+		(PAN\_NAT\_ID\_id, full\_name, phone, date\_of\_birth, address, created\_at, created\_by)
+		VALUES ($PAN\_NAT\_ID\_id$, $full\_name$, $phone$, $date\_of\_birth$, $address$, NOW())
+		\STATE CALL \textsc{LogActivity}($registered\_by$, 'CREATE', 'Patient', $patient\_id$, 'Registered new patient')
+		\RETURN $patient\_id$
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Appointment Conflict Prevention (REQ-7)}
+
+REQ-7 requires the system to prevent saving an appointment if another appointment already exists for the same doctor, date, and start time.
+
+\subsubsection{Algorithm 5: Create Appointment with Conflict Prevention}
+
+\begin{algorithm}[H]
+	\caption{Create Appointment}
+	\label{alg:create-appointment}
+	\begin{algorithmic}[1]
+		\REQUIRE $DOC\_ID$, $PAT\_ID$, $APP\_DATE$, $APP\_TIME$, $SER\_ID$, $APP\_STS$ (receptionist ID)
+		\ENSURE $APP\_ID$ or error
+		\STATE Validate input (doctor exists, patient exists, date not in past)
+		\STATE $end\_time \leftarrow$ \textsc{AddMinutes}($start\_time$, $duration\_minutes$)
+		\STATE $conflict \leftarrow$ SELECT COUNT(*) FROM \texttt{Appointment}
+		WHERE doctor\_id = $DOC\_ID$
+		AND appointment\_date = $APP\_DATE$
+		AND start\_time = $start\_time$
+		\IF{$conflict > 0$}
+		\RETURN error "Doctor already has an appointment at this date and time"
+		\ENDIF
+		\STATE $APP\_ID \leftarrow$ INSERT INTO \texttt{Appointment}
+		(DOC\_ID, PAT\_ID, APP\_DATE, APP\_STS)
+		VALUES ($DOC\_ID$, $PAT\_ID$, $APP\_DATE$, $APP\_STS$)
+	\STATE CALL \textsc{LogActivity}($LOG\_ID$, 'USR\_ID','create Appointment', , $LOG_ACT_TM$, '$LOG_IP_ADRS$')
+		\RETURN $APP\_ID$
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Reschedule or Cancel Appointments (REQ-8)}
+
+REQ-8 requires the ability to reschedule or cancel existing appointments with automatic update of doctor availability.
+
+\subsubsection{Algorithm 6: Reschedule Appointment}
+
+\begin{algorithm}[H]
+	\caption{Reschedule Appointment with Real-Time Availability Check}
+	\begin{algorithmic}[1]
+		\REQUIRE appointment\_id, new\_doctor\_id, new\_date, new\_start\_time, duration, updated\_by
+		\STATE Retrieve current appointment
+		\IF{not found}
+		\RETURN error
+		\ENDIF
+		
+		\STATE new\_end\_time $\leftarrow$ AddMinutes(new\_start\_time, duration)
+		
+		\STATE Check doctor schedule in \texttt{Schedule}
+		\IF{new time outside doctor's shift}
+		\RETURN error "Outside doctor's working hours"
+		\ENDIF
+		
+		\STATE conflict $\leftarrow$
+		SELECT COUNT(*) FROM Appointment
+		WHERE DOC\_ID = new\_doctor\_id
+		AND APP\_DATE = new\_date
+		AND appointment\_id != appointment\_id
+		AND new\_start\_time < (APP\_TIME + duration)
+		AND new\_end\_time > APP\_TIME
+		
+		\IF{conflict > 0}
+		\RETURN error "Doctor is not available at this time"
+		\ENDIF
+		
+		\STATE BEGIN TRANSACTION
+		
+		\STATE UPDATE Appointment ...
+		
+		\STATE CALL \textsc{LogActivity}($LOG\_ID$, 'USR\_ID','Rescheduled appointment', , $LOG_ACT_TM$, '$LOG_IP_ADRS$')
+		
+		\STATE COMMIT
+		\RETURN success
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Algorithm 7: Cancel Appointment}
+
+\begin{algorithm}[H]
+	\caption{Cancel Appointment}
+	\label{alg:cancel-appointment}
+	\begin{algorithmic}[1]
+		\REQUIRE $appointment\_id$, $cancelled\_by$ (receptionist ID)
+		\ENSURE success or error
+		\STATE Retrieve existing appointment details from \texttt{Appointment}
+		\IF{not found or status = 'cancelled'}
+		\RETURN error "Appointment not found or already cancelled"
+		\ENDIF
+		\STATE BEGIN TRANSACTION
+		\STATE UPDATE \texttt{Appointment} SET
+		status = 'cancelled',
+		cancelled\_at = NOW(),
+		cancelled\_by = $cancelled\_by$
+		WHERE appointment\_id = $appointment\_id$
+		\STATE CALL \textsc{LogActivity}($cancelled\_by$, 'CANCEL', 'Appointment', $appointment\_id$, 'Appointment cancelled')
+		\STATE COMMIT TRANSACTION
+		\RETURN success
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Link Diagnoses to Services and Automatic Invoice Generation (REQ-12 \& REQ-13)}
+
+REQ-12 allows linking recorded diagnoses to medical services. REQ-13 requires automatic invoice generation based on linked services.
+
+\subsubsection{Algorithm 8: Link Services to Diagnosis}
+
+\begin{algorithm}[H]
+	\caption{Link Medical Services to Diagnosis}
+	\label{alg:link-services-diagnosis}
+	\begin{algorithmic}[1]
+		\REQUIRE $diagnosis\_id$, $service\_ids$ (array of service IDs), $linked\_by$ (doctor ID)
+		\ENSURE success or error
+		\STATE Verify that $diagnosis\_id$ exists and belongs to the current patient visit
+		\IF{not found}
+		\RETURN error "Diagnosis not found"
+		\ENDIF
+		\STATE BEGIN TRANSACTION
+		\STATE DELETE FROM \texttt{Diagnosis\_Service} WHERE diagnosis\_id = $diagnosis\_id$
+		\STATE \textbf{For each} $service\_id$ in $service\_ids$:
+		\STATE \quad INSERT INTO \texttt{Diagnosis\_Service} (diagnosis\_id, service\_id, linked\_at, linked\_by)
+		VALUES ($diagnosis\_id$, $service\_id$, NOW(), $linked\_by$)
+		\STATE \textbf{End For}
+		\STATE CALL \textsc{LogActivity}($linked\_by$, 'LINK', 'Diagnosis', $diagnosis\_id$, 
+		'Linked services: ' . json\_encode($service\_ids$))
+		\STATE COMMIT TRANSACTION
+		\STATE CALL \textsc{GenerateInvoiceForVisit}($diagnosis\_id$)
+		\RETURN success
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Algorithm 9: Generate Invoice from Linked Services}
+
+\begin{algorithm}[H]
+	\caption{Generate Invoice (called automatically)}
+	\label{alg:generate-invoice}
+	\begin{algorithmic}[1]
+		\STATE \textbf{Procedure} GenerateInvoiceForVisit($diagnosis\_id$):
+		\STATE \quad Retrieve $patient\_id$ and $visit\_date$ from diagnosis record
+		\STATE \quad Retrieve all $service\_ids$ linked to this $diagnosis\_id$ from \texttt{Diagnosis\_Service}
+		\IF{no services linked}
+		\RETURN (no invoice generated)
+		\ENDIF
+		\STATE \quad $total\_amount \leftarrow 0$
+		\STATE \quad \textbf{For each} $service\_id$ in $service\_ids$:
+		\STATE \qquad $price \leftarrow$ SELECT price FROM \texttt{Service} WHERE service\_id = $service\_id$
+		\STATE \qquad $total\_amount \leftarrow total\_amount + price$
+		\STATE \quad \textbf{End For}
+		\STATE \quad Check if an invoice already exists for this diagnosis
+		\IF{exists}
+		\STATE \quad UPDATE \texttt{Bill} SET total\_amount = $total\_amount$, updated\_at = NOW()
+		WHERE diagnosis\_id = $diagnosis\_id$
+		\STATE \quad CALL \textsc{LogActivity}(0, 'UPDATE', 'Bill', $bill\_id$, 'Invoice updated after service change')
+		\ELSE
+		\STATE \quad INSERT INTO \texttt{Bill} (patient\_id, diagnosis\_id, total\_amount, status, created\_at)
+		VALUES ($patient\_id$, $diagnosis\_id$, $total\_amount$, 'pending', NOW())
+		\STATE \quad $bill\_id \leftarrow$ last inserted ID
+		\STATE \quad CALL \textsc{LogActivity}(0, 'CREATE', 'Bill', $bill\_id$, 'Invoice auto-generated from linked services')
+		\ENDIF
+		\STATE \textbf{End Procedure}
+	\end{algorithmic}
+\end{algorithm}
+
+ \subsection{Summary of Traceability}
+ 
+ \begin{longtable}{|p{3cm}|p{3cm}|p{8cm}|}
+ 	\caption{Algorithm to Requirement Mapping} \label{tab:algo-trace} \\
+ 	\hline
+ 	\textbf{Algorithm} & \textbf{REQ ID} & \textbf{Description} \\
+ 	\hline
+ 	\endfirsthead
+ 	\hline
+ 	\textbf{Algorithm} & \textbf{REQ ID} & \textbf{Description} \\
+ 	\hline
+ 	\endhead
+ 	\hline
+ 	\endfoot
+ 	Algorithm 1 & REQ-1 & Create user account \\
+ 	Algorithm 2 & REQ-1 & Update user account \\
+ 	Algorithm 3 & REQ-1 & Deactivate user account \\
+ 	Algorithm 4 & REQ-4 & Register patient with duplicate prevention \\
+ 	Algorithm 5 & REQ-7 & Appointment conflict prevention \\
+ 	Algorithm 6 & REQ-8 & Reschedule appointment \\
+ 	Algorithm 7 & REQ-8 & Cancel appointment \\
+ 	Algorithm 8 & REQ-12 & Link services to diagnosis \\
+ 	Algorithm 9 & REQ-13 & Automatic invoice generation \\
+ 	Algorithm 10 & REQ-14 & Record payment and generate receipt \\
+ 	\hline
+ \end{longtable}
