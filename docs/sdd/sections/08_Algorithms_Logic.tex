@@ -174,7 +174,50 @@ REQ-7 requires the system to prevent saving an appointment if another appointmen
 		\RETURN $APP\_ID$
 	\end{algorithmic}
 \end{algorithm}
+%____________
 
+\subsubsection{Algorithm 5: Create Appointment with Concurrency Control}
+
+\begin{algorithm}[H]
+	\caption{Create Appointment (Race-Condition Free)}
+	\label{alg:create-appointment}
+	\begin{algorithmic}[1]
+		\REQUIRE $DOC\_ID$, $PAT\_ID$, $SER\_ID$, $APP\_DATE$, $APP\_TIME$, $APP\_STS$, $USR\_ID$, $LOG\_IP\_ADRS$
+		\ENSURE $APP\_ID$ or error
+		\STATE Validate input (doctor exists, patient exists, date/time not in past)
+		\STATE $duration\_minutes \leftarrow$ SELECT duration\_minutes FROM \texttt{Services} WHERE SER\_ID = $SER\_ID$
+		\STATE $APP\_END\_TM \leftarrow$ \textsc{AddMinutes}($APP\_TIME$, $duration\_minutes$)
+		
+		\STATE \textbf{START TRANSACTION} \COMMENT{Begin atomic database operations}
+		
+		\STATE \COMMENT{Apply Pessimistic Lock (FOR UPDATE) to prevent concurrent bookings on overlapping slots}
+		\STATE $conflict \leftarrow$ SELECT COUNT(*) FROM \texttt{Appointment} 
+		WHERE doctor\_id = $DOC\_ID$
+		AND appointment\_date = $APP\_DATE$
+		AND (($APP\_TIME$ >= start\_time AND $APP\_TIME$ < end\_time) 
+		OR ($APP\_END\_TM$ > start\_time AND $APP\_END\_TM$ <= end\_time))
+		\textbf{FOR UPDATE}
+		
+		\IF{$conflict > 0$}
+		\STATE \textbf{ROLLBACK}
+		\RETURN error "Doctor already has an overlapping appointment at this date and time"
+		\ENDIF
+		
+		\STATE Execute Database Insert and capture execution status
+		\STATE $APP\_ID \leftarrow$ INSERT INTO \texttt{Appointment} (DOC\_ID, PAT\_ID, SER\_ID, APP\_DATE, APP\_TIME, APP\_END\_TM, APP\_STS) VALUES ($DOC\_ID$, $PAT\_ID$, $SER\_ID$, $APP\_DATE$, $APP\_TIME$, $APP\_END\_TM$, $APP\_STS$)
+		
+		\IF{Insert Operations Successful}
+		\STATE CALL \textsc{LogActivity}($USR\_ID$, 'CREATE\_APPOINTMENT', CONCAT('Appointment ID: ', $APP\_ID$), $LOG\_IP\_ADRS$)
+		\STATE \textbf{COMMIT} \COMMENT{Persist booking and release row locks}
+		\RETURN $APP\_ID$
+		\ELSE
+		\STATE \textbf{ROLLBACK} \COMMENT{Safely revert database state in case of unexpected failure}
+		\RETURN error "Database transaction failed during appointment creation"
+		\ENDIF
+	\end{algorithmic}
+\end{algorithm}
+
+%___________
 \subsection{Reschedule or Cancel Appointments (REQ-8)}
 
 REQ-8 requires the ability to reschedule or cancel existing appointments with automatic update of doctor availability.
