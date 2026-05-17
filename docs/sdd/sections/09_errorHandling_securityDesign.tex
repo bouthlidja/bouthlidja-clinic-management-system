@@ -1,0 +1,82 @@
+% =========================================================================
+% SECTION 9: ERROR HANDLING AND SECURITY DESIGN
+% =========================================================================
+
+\section{Error Handling and Security Design}
+\label{sec:error_handling_security}
+
+\subsection{Security Design}
+\label{subsec:security_design}
+
+\subsubsection{Authentication, Authorization, and Role-Based Access Control (RBAC)}
+To enforce the operational and data governance policies outlined in the SRS (Sections 6.7.2, 6.8.3), the system employs a strict Role-Based Access Control (RBAC) mechanism utilizing JSON Web Tokens (JWT) for session authentication.
+
+\begin{itemize}
+	\item \textbf{Authentication Enforcement:} Users must authenticate using credentials conforming to the Password Policy (SRS 6.8.3). Upon successful login, a cryptographically signed JWT is issued to the client side (Vue.js).
+	\item \textbf{Authorization for Financial Workflows:} 
+	\begin{itemize}
+		\item \textbf{REQ-14 (Payment \& Receipting):} The REST API endpoints responsible for recording payments and generating electronic receipts (mutating \texttt{Bill} and \texttt{Payment} entities) will explicitly restrict execution privileges to users mapped to the \textbf{Receptionist} role.
+		\item \textbf{REQ-15 (Financial Reports):} Access to endpoints aggregating daily/monthly revenue data categorized by medical specialty is strictly restricted to the \textbf{Admin} role. Any client request attempting to fetch these payloads without an elevated Admin token will be blocked at the API Gateway layer.
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Data Cryptography (Data-at-Rest \& Data-in-Transit)}
+In compliance with Health Data Governance (SRS 6.7.3), patient records and sensitive financial transaction payloads must be heavily secured:
+\begin{itemize}
+	\item \textbf{Data-in-Transit:} All communications between the Vue.js Frontend web application and the Backend Engine—especially payment updates (\textbf{REQ-14}) and revenue report transmissions (\textbf{REQ-15})—are forcefully encrypted using \textbf{HTTPS with TLS 1.3}.
+	\item \textbf{Data-at-Rest:} Cryptographic hashing (e.g., BCrypt) is utilized for authentication tokens and passwords. Sensitive medical diagnoses linked to financial transactions (\texttt{Medical\_record}, \texttt{Bill}) are encrypted at the database level using \textbf{AES-256}.
+\end{itemize}
+
+\subsubsection{Session Management and Token Lifecycle}
+As dictated by SRS 6.8.2:
+\begin{itemize}
+	\item JWT sessions are architected with a sliding expiration lifetime of 15 minutes of inactivity. 
+	\item Tokens are stored securely via browser \texttt{HttpOnly} and \texttt{Secure} cookies to completely mitigate Cross-Site Scripting (XSS) injection risks. 
+	\item Explicit logouts or token expirations instantly clear the application state within the Vue.js frontend and blacklist the token on the Backend Engine.
+\end{itemize}
+
+\subsubsection{Audit Logging and Financial Monitoring}
+Correlating SRS 6.7.7 (Audit \& Monitoring) and SDD 7.1.3 (\texttt{Log\_active} Entity), all critical structural modifications and data views are recorded:
+\begin{itemize}
+	\item \textbf{Payment Transactions (REQ-14):} Every instance of a payment being recorded, partially processed, or an electronic receipt being generated must trigger an immutable row insertion into the \texttt{Log\_active} entity. The log schema captures: \texttt{Timestamp}, \texttt{User\_ID} (Receptionist), \texttt{Action\_Type} (e.g., \texttt{PAYMENT\_RECORDED}), \texttt{Entity\_ID} (Bill/Payment ID), and \texttt{IP\_Address}.
+	\item \textbf{Financial Reporting (REQ-15):} Because aggregate revenue tracking presents a massive target for internal data leaks, every query execution or file export of daily/monthly financial statements is systematically logged under the action type \texttt{FINANCIAL\_REPORT\_VIEWED} tied to the respective Admin user ID.
+\end{itemize}
+
+\newpage
+\subsection{Error Handling Strategy}
+\label{subsec:error_handling_strategy}
+
+The system implements a dual-layer, defensive error-handling strategy spanning both the Vue.js frontend client and the core Business Logic Backend Engine. This ensures application resilience, clean failure recovery, and zero exposure of underlying infrastructure properties to malicious actors.
+
+\subsubsection{Frontend Error Handling (Vue.js)}
+\begin{itemize}
+	\item \textbf{Asynchronous API Errors:} The client utilizes interceptors (via Axios) to globally capture HTTP error responses returned by the backend engine. 
+	\item \textbf{User UX Degradation:} If a network failure occurs or a payment terminal times out during execution of \textbf{REQ-14}, the frontend traps the exception, prevents screen freezes, and displays a safe localized message (e.g., \textit{"Payment processing timed out. Please verify your connection and try again."}) instead of structural raw JavaScript stack traces.
+	\item \textbf{Unauthorized Access Interception:} If a Receptionist attempts to access an Admin reporting route (\textbf{REQ-15}), or if a token expires mid-session, the interceptor immediately captures the \texttt{403 Forbidden} or \texttt{401 Unauthorized} header and reroutes the user to a generic Access Denied landing page or the baseline Login terminal.
+\end{itemize}
+
+\subsubsection{Backend Error Handling (Engine Layer)}
+\begin{itemize}
+	\item \textbf{Defensive Exception Propagation:} The backend engine incorporates structured global exception handlers (Controller Advice patterns). Methods mutating the database state (\textbf{REQ-14}) wrapper operations inside explicit local try-catch-finally runtime blocks.
+	\item \textbf{Transactional Rollbacks:} For \textbf{REQ-14}, if an exception occurs \textit{after} writing the payment record to the \texttt{Payment} table but \textit{before} updating the matching invoice record in the \texttt{Bill} entity, the system triggers an automatic database transaction rollback. This preserves strict financial data integrity.
+	\item \textbf{Information Masking (Abstraction):} The Engine is strictly prohibited from passing system exceptions (such as SQL injection faults or raw database driver timeouts) directly up to the HTTP response packet. All backend system errors are converted into standard abstract domain messages.
+\end{itemize}
+
+\subsubsection{Global Exception Mapping Matrix}
+The following matrix dictates how specific application business failures translate into secure HTTP Status codes and how they are logged/presented to the user interface:
+
+\begin{table}[htbp]
+	\centering
+	\small
+	\caption{Global Exception Mapping Matrix}
+	\label{tab:exception_matrix}
+	\begin{tabular}{|p{4.2cm}|p{2.5cm}|p{3.8cm}|p{4.2cm}|}
+		\hline
+		\textbf{System / Business Exception} & \textbf{Mapped HTTP} & \textbf{UX User-Facing Message} & \textbf{Logging Behavior \& Action Taken} \\ \hline
+		\texttt{PaymentGatewayTimeout\-Exception} & 504 Gateway Timeout & Payment provider is currently unreachable. No funds were captured. & Logged with \texttt{HIGH} severity. Rollback database state; flag billing status as \texttt{PENDING}. \\ \hline
+		\texttt{InsufficientPrivileges\-Exception} & 403 Forbidden & Access Denied: You do not have permissions to view this resource. & Logged with \texttt{WARN} severity inside \texttt{Log\_active}. Flag potential intrusion attempt. \\ \hline
+		\texttt{InvalidPaymentAmount\-Exception} & 400 Bad Request & The entered amount exceeds the remaining invoice balance. & Logged with \texttt{INFO} severity. Prevent transaction execution; prompt Receptionist for manual entry. \\ \hline
+		\texttt{ReportGeneration\-Exception} & 500 Internal Error & Failed to compile financial summaries. Please retry shortly. & Logged with \texttt{ERROR} severity. Write full stack trace to the local system server log file only. \\ \hline
+		\texttt{SessionExpired\-Exception} & 401 Unauthorized & Your session has expired. Please log in again. & Logged with \texttt{INFO} severity. Flush frontend cache; forcefully redirect client to login route. \\ \hline
+	\end{tabular}
+\end{table}
