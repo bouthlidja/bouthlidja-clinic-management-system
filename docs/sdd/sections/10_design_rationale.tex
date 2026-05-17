@@ -1,0 +1,78 @@
+% =========================================================================
+% SECTION: DESIGN RATIONALE
+% =========================================================================
+
+\section{Design Rationale}
+\label{sec:design_rationale}
+
+This section provides the engineering justification for the major architectural, technological, and tactical design decisions made for the Clinic Management System. Each decision is evaluated against the non-functional requirements (NFRs) and constraints defined in the SRS (Sections 2.4, 2.5, and 6).
+
+\subsection{Architectural Style: Three-Tier Client-Server Architecture}
+\label{subsec:rationale_architecture}
+
+\begin{itemize}
+	\item \textbf{Decision:} Adopting a decoupled Three-Tier Client-Server architecture separating the Presentation Layer (Vue.js SPA), Application Layer (PHP RESTful API), and Data Layer (MySQL RDBMS) over secure HTTPS connections.
+	\item \textbf{Rationale:} 
+	\begin{itemize}
+		\item \textbf{Performance (SRS 6.1):} By moving the rendering workload to the client browser (Vue.js), server resources are preserved exclusively for business logic execution. This structural optimization ensures the system satisfies the mandatory \texttt{$\le$ 2-second} response time for critical paths like patient searching (\textbf{REQ-6}) and concurrency handling for up to 50 users.
+		\item \textbf{Separation of Concerns (SDD 3.2.1):} Isolating backend services via stateless endpoints guarantees that modifications to the user interface do not propagate regressions into the medical data workflows or billing engine.
+	\end{itemize}
+	\item \textbf{Alternatives Considered:} Traditional Monolithic Server-Side Rendering (e.g., standard PHP with embedded HTML/Blade templates).
+	\item \textbf{Reason for Rejection:} Monolithic rendering demands full-page reloads for every state change. This increases network payload overhead, violates the lightweight JSON communication constraint, and introduces latency that directly degrades the user experience (UX) required for fast-paced clinic operations.
+\end{itemize}
+
+\subsection{Backend Language Strategy: Object-Oriented PHP via RESTful APIs}
+\label{subsec:rationale_backend}
+
+\begin{itemize}
+	\item \textbf{Decision:} Utilizing PHP with strict Object-Oriented Programming (OOP) abstraction (via PHP Data Objects - PDO) to expose stateless RESTful APIs.
+	\item \textbf{Rationale:} 
+	\begin{itemize}
+		\item \textbf{Technical Stack Constraint (SRS 2.5):} Explicitly conforms to the technologies mandated by the design constraints.
+		\item \textbf{Maintainability \& Portability (SRS 6.5 / SDD 3.2.1):} Utilizing OOP and SOLID principles allows the Data Access Layer to remain independent of underlying database structural shifts. Exposing standardized REST endpoints ensures seamless interoperability, allowing future expansions (such as native mobile applications for patients) to consume the same business logic without rewriting core application modules.
+	\end{itemize}
+	\item \textbf{Alternatives Considered:} Node.js (JavaScript) or Python (FastAPI/Django).
+	\item \textbf{Reason for Rejection:} These options were discarded due to the strict technical stack constraints imposed in SRS Section 2.5, and to leverage the native, reliable multi-platform compatibility of PHP across both Linux and Windows Server environments (SRS 2.4).
+\end{itemize}
+
+\subsection{Database Selection: Relational DBMS (MySQL)}
+\label{subsec:rationale_database}
+
+\begin{itemize}
+	\item \textbf{Decision:} Utilizing MySQL as the relational storage engine with heavily enforced foreign key constraints, indexing, and transactional isolation.
+	\item \textbf{Rationale:} 
+	\begin{itemize}
+		\item \textbf{Data Integrity \& ACID Compliance:} Financial ledger operations (\textbf{REQ-14}, \textbf{REQ-15}) and Electronic Medical Records (EMR) demand perfect data synchronization. If a doctor records a diagnosis and links a service (\textbf{REQ-12}), the corresponding automated invoice (\textbf{REQ-13}) must be perfectly mapped. Relational schemas prevent orphaned bills, invalid double-bookings (\textbf{REQ-7}), and transaction anomalies.
+		\item \textbf{Health Data Governance (SRS 6.7.1):} Structured tables are required to cleanly partition data classifications (PII, PHI, Financial Data, and System Logs).
+	\end{itemize}
+	\item \textbf{Alternatives Considered:} NoSQL Document Stores (e.g., MongoDB).
+	\item \textbf{Reason for Rejection:} NoSQL engines do not inherently enforce strict relational integrity or multi-table transactional rollbacks natively. Relying on NoSQL introduces an unacceptable risk of data corruption, financial discrepancies in revenue tracking, and inconsistent states in patient scheduling.
+\end{itemize}
+
+\subsection{Session and Access Security: Hybrid JWT with Token Blacklisting}
+\label{subsec:rationale_security}
+
+\begin{itemize}
+	\item \textbf{Decision:} Enforcing Role-Based Access Control (RBAC) via JSON Web Tokens (JWT) embedded within browser-secured \texttt{HttpOnly} cookies. To secure explicit logouts without resorting to full stateful sessions, the system employs a \textbf{Token Blacklist} (via a lightweight \texttt{Revoked\_Tokens} database table) to track the unique identifiers (\texttt{jti}) of invalidated tokens until their natural 15-minute expiration.
+	\item \textbf{Rationale:} 
+	\begin{itemize}
+		\item \textbf{Optimized Performance (Hybrid Statelessness):} Active session states are not heavily tracked in memory. The backend solely queries the indexed \texttt{Revoked\_Tokens} table to ensure the token isn't blacklisted, balancing high concurrent performance with robust security.
+		\item \textbf{Principle of Least Privilege (SRS 6.2 / 6.7.2):} The JWT encapsulates cryptographically signed user roles, guaranteeing that endpoints like financial reporting (\textbf{REQ-15}) block non-Admin tokens, while payment recording (\textbf{REQ-14}) remains strictly restricted to authorized Receptionists.
+		\item \textbf{XSS Mitigation:} Storing tokens inside \texttt{HttpOnly} and \texttt{Secure} cookies ensures that client-side scripts cannot access or extract session credentials, mitigating Cross-Site Scripting vulnerabilities.
+	\end{itemize}
+	\item \textbf{Alternatives Considered:} Pure Stateless JWTs (no logout tracking) vs. Full Server-side Stateful Sessions.
+	\item \textbf{Reason for Rejection:} Pure stateless JWTs pose a critical security risk upon explicit logout, as intercepted tokens remain mathematically valid until expiry. Conversely, full stateful tracking creates architectural bottlenecks and demands excessive database I/O for every active user. The hybrid blacklisting approach resolves this by only tracking explicitly revoked tokens, minimizing database overhead while closing the security gap.
+\end{itemize}
+\subsection{Audit Strategy: Active Centralized Logging Engine}
+\label{subsec:rationale_audit}
+
+\begin{itemize}
+	\item \textbf{Decision:} Designing a centralized, immutable database-driven logging infrastructure mapping mutations directly to the \texttt{Active\_log} (or \texttt{Log\_active}) entity.
+	\item \textbf{Rationale:} 
+	\begin{itemize}
+		\item \textbf{Regulatory Compliance (SRS 6.2 / 6.7.7):} Health Data Governance demands a permanent audit trail for all Protected Health Information (PHI) and financial changes. Logging the \texttt{User\_ID}, \texttt{Timestamp}, \texttt{Action\_Type}, and \texttt{IP\_Address} guarantees complete traceability.
+		\item \textbf{Operational Accountability:} Protects the integrity of financial reporting (\textbf{REQ-15}) by verifying exactly which Admin executed or viewed revenue breakdowns, and which Receptionist registered a transaction payload (\textbf{REQ-14}).
+	\end{itemize}
+	\item \textbf{Alternatives Considered:} Local operating system text file logging (\texttt{.log} files).
+	\item \textbf{Reason for Rejection:} Plain text files stored on local server disks are vulnerable to unauthorized modifications by system users, lack native structured query filtering capabilities for Admin reviews (violating SRS 6.8.4), and introduce disk I/O latency bottlenecks during peak operation hours.
+\end{itemize}
