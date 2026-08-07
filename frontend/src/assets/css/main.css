@@ -1,0 +1,6 @@
+/* =========================================================================
+   Main CSS Entry Point (Compliant with SDD Specifications)
+   ========================================================================= */
+
+@import './variables.css';
+@import './global.css';

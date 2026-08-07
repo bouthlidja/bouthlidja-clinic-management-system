@@ -13,7 +13,10 @@ import 'vue-toastification/dist/index.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
-
+// =========================================================================
+// Global Styles (Pure CSS)
+// =========================================================================
+import './assets/css/main.css'
 // =========================================================================
 // 2. Core Application & Routing
 // =========================================================================

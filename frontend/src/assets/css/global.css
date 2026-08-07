@@ -1,0 +1,31 @@
+/* =========================================================================
+   Global Resets & Layout Rules
+   ========================================================================= */
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--bg-main);
+  /* direction: rtl;
+  text-align: left; */
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
