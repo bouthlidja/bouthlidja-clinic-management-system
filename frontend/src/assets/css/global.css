@@ -1,12 +1,13 @@
 /* =========================================================================
    Global Resets & Layout Rules
    ========================================================================= */
-
+* {
+  margin: 0;
+  padding: 0;
+}
 body {
   font-family: var(--font-family-base);
   background-color: var(--bg-main);
-  /* direction: rtl;
-  text-align: left; */
   margin: 0;
   padding: 0;
 }
@@ -18,7 +19,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #522727;
 }
 
 ::-webkit-scrollbar-thumb {

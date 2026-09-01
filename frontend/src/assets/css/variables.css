@@ -3,22 +3,17 @@
    ========================================================================= */
 
 :root {
-  /* Brand Colors */
-  --primary-color: #0d6efd;
-  --primary-hover: #0b5ed7;
+  --font-family-base: 'Tajawal', sans-serif;
+  --primary-bg: #0b2a4a;
+  --secondary-bg: #1a3a5c;
+  --hover-bg: #2a5c8a;
+  --active-bg: #2a5c8a;
+  --text-white: #ffffff;
+  --text-dim: #e8f4fd;
+  /* --accent-glow: rgba(42, 92, 138, 0.4); */
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --transition-speed: 0.3s;
 
-  /* Sidebar Colors */
-  --sidebar-bg: #1e293b;
-  --sidebar-text: #94a3b8;
-  --sidebar-text-hover: #f8fafc;
-  --sidebar-active-bg: #0d6efd;
-  --sidebar-active-text: #ffffff;
-
-  /* Layout Backgrounds */
-  --bg-main: #f8fafc;
-  --card-bg: #ffffff;
-  --border-color: #e2e8f0;
-
-  /* Typography */
-  --font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
 }
