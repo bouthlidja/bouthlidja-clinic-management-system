@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
+import i18n from './i18n'
+
 // =========================================================================
 // 1. External UI Libraries & Styles
 // =========================================================================
@@ -44,7 +46,7 @@ const toastOptions = {
 app.use(createPinia()) // Pinia state management store
 app.use(router) // Vue Router instance
 app.use(Toast, toastOptions) // Global toast notifications plugin
-
+app.use(i18n)
 // =========================================================================
 // 5. Application Mount
 // =========================================================================
