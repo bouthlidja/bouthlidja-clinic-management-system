@@ -29,7 +29,9 @@ const toggleSidebar = () => {
 
 .page-container {
   min-height: 100vh;
-  padding: 20px;
+  /* padding: 20px; */
   flex-grow: 1;
+  background-color: var(--primary-bg);
+  color: var(--text-white);
 }
 </style>

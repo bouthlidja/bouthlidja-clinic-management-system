@@ -1,7 +1,13 @@
+<script setup>
+import MainHeader from '../../../components/MainHeader.vue'
+</script>
 <template>
   <div>
-    <h1>Service</h1>
+    <MainHeader
+      :title="$t('mainHeader.services.title')"
+      :description="$t('mainHeader.services.description')"
+    />
   </div>
 </template>
-<script setup></script>
+
 <style scoped></style>

@@ -50,64 +50,64 @@ const toggleSidebar = () => {
 
       <RouterLink to="/Dashboard" class="nav-item" data-title="Dashboard">
         <LayoutDashboard />
-        <span>{{ $t('dashboard') }}</span>
+        <span>{{ $t('sidebar.dashboard') }}</span>
       </RouterLink>
       <RouterLink to="/notifications" class="nav-item notification-item" data-title="Notifications">
         <Bell :size="20" />
-        <span>{{ $t('notifications') }}</span>
+        <span>{{ $t('sidebar.notifications') }}</span>
         <!-- <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span> -->
       </RouterLink>
       <div class="divider"></div>
 
       <!-- Group 1: Medical Operations -->
-      <div class="group-label">{{ $t('medicalOperations') }}</div>
+      <div class="group-label">{{ $t('sidebar.medicalOperations') }}</div>
       <RouterLink to="/doctors" class="nav-item" data-title="Doctors">
         <UserRound />
-        <span>{{ $t('doctors') }}</span>
+        <span>{{ $t('sidebar.doctors') }}</span>
       </RouterLink>
 
       <RouterLink to="/specialties" class="nav-item" data-title="Specialties">
         <Stethoscope :size="20" />
-        <span>{{ $t('specialties') }}</span>
+        <span>{{ $t('sidebar.specialties') }}</span>
       </RouterLink>
 
       <RouterLink to="/services" class="nav-item" data-title="Services">
         <BriefcaseMedical :size="20" />
-        <span>{{ $t('services') }}</span>
+        <span>{{ $t('sidebar.services') }}</span>
       </RouterLink>
 
       <RouterLink to="/medicines" class="nav-item" data-title="Medicines">
         <Pill :size="20" />
-        <span>{{ $t('medicines') }}</span>
+        <span>{{ $t('sidebar.medicines') }}</span>
       </RouterLink>
 
       <RouterLink to="/lab-tests" class="nav-item" data-title="Lab Tests">
         <FlaskConical :size="20" />
-        <span>{{ $t('labTests') }}</span>
+        <span>{{ $t('sidebar.labTests') }}</span>
       </RouterLink>
 
       <div class="divider"></div>
 
       <!-- Group 2: System Administration -->
-      <div class="group-label">{{ $t('systemAdministration') }}</div>
+      <div class="group-label">{{ $t('sidebar.systemAdministration') }}</div>
       <RouterLink to="/users" class="nav-item" data-title="User Management">
         <UsersRound :size="20" />
-        <span>{{ $t('users') }}</span>
+        <span>{{ $t('sidebar.users') }}</span>
       </RouterLink>
 
       <RouterLink to="/financial-reports" class="nav-item" data-title="Reports">
         <ChartNoAxesCombined :size="20" />
-        <span>{{ $t('financialReports') }}</span>
+        <span>{{ $t('sidebar.financialReports') }}</span>
       </RouterLink>
 
       <RouterLink to="/activity-log" class="nav-item" data-title="Activity Log">
         <History :size="20" />
-        <span>{{ $t('activityLog') }}</span>
+        <span>{{ $t('sidebar.activityLog') }}</span>
       </RouterLink>
 
       <RouterLink to="/settings" class="nav-item" data-title="Settings">
         <Settings :size="20" />
-        <span>{{ $t('settings') }}</span>
+        <span>{{ $t('sidebar.settings') }}</span>
       </RouterLink>
     </nav>
 
@@ -115,7 +115,7 @@ const toggleSidebar = () => {
     <div class="logout-section">
       <button type="button" class="nav-item logout-item" data-title="Logout">
         <LogOut :size="20" />
-        <span>{{ $t('logout') }}</span>
+        <span>{{ $t('sidebar.logout') }}</span>
       </button>
     </div>
   </aside>
