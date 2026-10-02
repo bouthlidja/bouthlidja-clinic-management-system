@@ -70,4 +70,18 @@ export default {
         'Manage system preferences, account settings, language, and application configuration.',
     },
   },
+  actions: {
+    add: 'Add',
+    edit: 'Edit',
+    delete: 'Delete',
+    disable: 'Disable',
+    search: 'Search',
+  },
+
+  search: {
+    users: 'Search users...',
+    doctors: 'Search doctors...',
+    medicines: 'Search medicines...',
+    services: 'Search services...',
+  },
 }
